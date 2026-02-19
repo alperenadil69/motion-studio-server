@@ -94,6 +94,13 @@ export async function renderVideo(componentCode, durationInFrames = 240, fps = 3
   const outputPath = path.join(VIDEOS_DIR, `${id}.mp4`);
 
   try {
+    if (!componentCode || typeof componentCode !== 'string') {
+      throw new Error(
+        `renderVideo received invalid componentCode: ${typeof componentCode}. ` +
+        'This is a bug — claude.js should have validated this already.'
+      );
+    }
+
     await fs.mkdir(tmpDir, { recursive: true });
 
     // Write the three files that form a complete Remotion project

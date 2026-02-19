@@ -108,7 +108,7 @@ export async function generateComponent(prompt) {
 
   const message = await client.messages.create({
     model: MODEL,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: SYSTEM_PROMPT,
     tools: [
       {
@@ -151,12 +151,29 @@ export async function generateComponent(prompt) {
 
   const toolUse = message.content.find((block) => block.type === 'tool_use');
   if (!toolUse) {
-    throw new Error('Claude did not generate a composition. Check your API key and model access.');
+    // Log the raw response so we can see what Claude actually returned
+    console.error('[claude] Unexpected response:', JSON.stringify(message.content, null, 2));
+    throw new Error('Claude did not call the tool. Check API key and model access.');
   }
 
   const { component_code, duration_in_frames, fps, title } = toolUse.input;
 
-  console.log(`[claude] Generated "${title}" — ${duration_in_frames} frames @ ${fps}fps`);
+  // Validate each required field explicitly for a clear error message
+  if (!component_code || typeof component_code !== 'string' || component_code.trim().length === 0) {
+    console.error('[claude] Bad tool input:', JSON.stringify(toolUse.input, null, 2));
+    throw new Error(
+      `Claude returned an empty or missing component_code (got ${JSON.stringify(component_code)}). ` +
+      'Try rephrasing your prompt or increasing max_tokens.'
+    );
+  }
+
+  if (!duration_in_frames || typeof duration_in_frames !== 'number') {
+    console.error('[claude] Bad tool input:', JSON.stringify(toolUse.input, null, 2));
+    throw new Error(`Claude returned invalid duration_in_frames: ${JSON.stringify(duration_in_frames)}`);
+  }
+
+  console.log(`[claude] Generated "${title}" — ${duration_in_frames} frames @ ${fps ?? 30}fps`);
+  console.log(`[claude] Component size: ${component_code.length} chars`);
 
   return { component_code, duration_in_frames, fps: fps || 30, title };
 }
