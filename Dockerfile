@@ -23,9 +23,8 @@ RUN apt-get update && apt-get install -y \
   --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
-# Tell Remotion/Puppeteer to use the system Chromium
+# Skip Puppeteer's own Chrome download (we use Remotion's ensureBrowser or system Chrome)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV CHROMIUM_FLAGS="--no-sandbox --disable-setuid-sandbox"
 
 WORKDIR /app
 

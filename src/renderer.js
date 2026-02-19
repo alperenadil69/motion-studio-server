@@ -58,6 +58,22 @@ function webpackOverride(config) {
   };
 }
 
+// --- Chrome options for Docker/Railway compatibility ---
+// In containers: no sandbox (no root privileges), use /tmp instead of /dev/shm
+// (Docker limits /dev/shm to 64 MB which causes Chrome to crash mid-render),
+// and fall back to software GL so no GPU is required.
+const CHROMIUM_OPTIONS = {
+  gl: 'swangle',         // software rasterizer — no GPU needed
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',   // ← key fix: avoids the 64 MB /dev/shm limit
+    '--disable-gpu',
+    '--no-first-run',
+    '--no-zygote',
+  ],
+};
+
 // --- Browser initialization ---
 
 let browserReady = false;
@@ -100,6 +116,7 @@ export async function renderVideo(componentCode, durationInFrames = 240, fps = 3
       serveUrl,
       id: 'MainVideo',
       inputProps: {},
+      chromiumOptions: CHROMIUM_OPTIONS,
     });
 
     // Render
@@ -110,6 +127,8 @@ export async function renderVideo(componentCode, durationInFrames = 240, fps = 3
       codec: 'h264',
       outputLocation: outputPath,
       inputProps: {},
+      chromiumOptions: CHROMIUM_OPTIONS,
+      timeoutInMilliseconds: 60000,   // 60s per frame (default 30s — generous for complex components)
       onProgress: ({ renderedFrames, encodedFrames }) => {
         process.stdout.write(
           `\r[renderer:${id}] rendered=${renderedFrames}  encoded=${encodedFrames}   `
