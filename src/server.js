@@ -3,83 +3,142 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
 import { generateComponent } from './claude.js';
 import { renderVideo, initBrowser } from './renderer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.join(__dirname, '..');
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = (process.env.BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 
+if (!process.env.BASE_URL) {
+  console.warn('[warn] BASE_URL is not set — video URLs will point to localhost.');
+  console.warn('[warn] On Railway: add BASE_URL=https://motion-studio-server-production.up.railway.app');
+}
+
+// ---------------------------------------------------------------------------
+// In-memory job store  { jobId → job }
+// ---------------------------------------------------------------------------
+const jobs = new Map();
+
+// Clean up jobs older than 2 hours every 30 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 2 * 60 * 60 * 1000;
+  for (const [id, job] of jobs) {
+    if (job.createdAt < cutoff) jobs.delete(id);
+  }
+}, 30 * 60 * 1000);
+
+// ---------------------------------------------------------------------------
+// Express
+// ---------------------------------------------------------------------------
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '10kb' }));
 
-// Serve rendered videos
+// Explicit CORS — allow any origin, handle preflight
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+app.options('*', cors()); // respond to all preflight OPTIONS requests
+
+app.use(express.json({ limit: '10kb' }));
 app.use('/videos', express.static(path.join(ROOT_DIR, 'videos')));
 
 // ---------------------------------------------------------------------------
 // GET /health
 // ---------------------------------------------------------------------------
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), activeJobs: jobs.size });
 });
 
 // ---------------------------------------------------------------------------
-// POST /generate
-// Body: { "prompt": "string" }
+// POST /generate  →  { jobId, status: "processing" }
+// Returns immediately — rendering happens in the background.
 // ---------------------------------------------------------------------------
-app.post('/generate', async (req, res) => {
+app.post('/generate', (req, res) => {
   const { prompt } = req.body ?? {};
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Body must contain a non-empty "prompt" string.' });
   }
-
   if (prompt.length > 2000) {
     return res.status(400).json({ error: 'Prompt must be under 2000 characters.' });
   }
 
+  const jobId = uuidv4();
   const trimmed = prompt.trim();
-  console.log(`\n[request] "${trimmed.slice(0, 100)}..."`);
 
-  try {
-    // 1. Generate the Remotion component with Claude
-    const { component_code, duration_in_frames, fps, title } = await generateComponent(trimmed);
+  jobs.set(jobId, {
+    status: 'processing',
+    step: 'Generating component with Claude…',
+    prompt: trimmed.slice(0, 100),
+    createdAt: Date.now(),
+  });
 
-    // 2. Render the video with Remotion
-    const videoId = await renderVideo(component_code, duration_in_frames, fps);
+  console.log(`\n[job:${jobId}] Started — "${trimmed.slice(0, 80)}"`);
 
-    // 3. Return the result
-    const url = `${BASE_URL}/videos/${videoId}.mp4`;
-    return res.json({
-      success: true,
-      id: videoId,
-      title,
-      url,
-      duration_seconds: parseFloat((duration_in_frames / fps).toFixed(2)),
-      fps,
-    });
-  } catch (err) {
-    console.error('[error]', err.message);
-    return res.status(500).json({
-      success: false,
-      error: 'Video generation failed.',
-      details: err.message,
-    });
+  // Fire-and-forget — run in background, do not block the HTTP response
+  (async () => {
+    try {
+      // Step 1 — Claude
+      jobs.get(jobId).step = 'Generating component with Claude…';
+      const { component_code, duration_in_frames, fps, title } = await generateComponent(trimmed);
+
+      // Step 2 — Remotion
+      jobs.get(jobId).step = 'Rendering video with Remotion…';
+      const videoId = await renderVideo(component_code, duration_in_frames, fps);
+
+      const url = `${BASE_URL}/videos/${videoId}.mp4`;
+
+      jobs.set(jobId, {
+        status: 'done',
+        url,
+        title,
+        duration_seconds: parseFloat((duration_in_frames / fps).toFixed(2)),
+        fps,
+        createdAt: jobs.get(jobId)?.createdAt ?? Date.now(),
+      });
+
+      console.log(`[job:${jobId}] Done → ${url}`);
+    } catch (err) {
+      console.error(`[job:${jobId}] Error:`, err.message);
+      jobs.set(jobId, {
+        status: 'error',
+        error: err.message,
+        createdAt: jobs.get(jobId)?.createdAt ?? Date.now(),
+      });
+    }
+  })();
+
+  // Immediate response — client must poll /job/:jobId
+  res.status(202).json({ success: true, jobId, status: 'processing' });
+});
+
+// ---------------------------------------------------------------------------
+// GET /job/:jobId  →  { status, step?, url?, title?, error? }
+// Poll this endpoint every 5 seconds until status is "done" or "error".
+// ---------------------------------------------------------------------------
+app.get('/job/:jobId', (req, res) => {
+  const job = jobs.get(req.params.jobId);
+  if (!job) {
+    return res.status(404).json({ error: 'Job not found. It may have expired (2 h TTL).' });
   }
+  res.json(job);
 });
 
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-console.log('Initialising browser...');
+console.log('Initialising browser…');
 await initBrowser();
 
 app.listen(PORT, () => {
   console.log(`\nMotion Studio Server ready`);
-  console.log(`  Local:   http://localhost:${PORT}`);
-  console.log(`  Health:  http://localhost:${PORT}/health`);
-  console.log(`  Generate: POST http://localhost:${PORT}/generate`);
-  console.log(`            Body: { "prompt": "your creative brief" }\n`);
+  console.log(`  Health:   GET  ${BASE_URL}/health`);
+  console.log(`  Generate: POST ${BASE_URL}/generate   { "prompt": "..." }`);
+  console.log(`  Poll:     GET  ${BASE_URL}/job/:jobId\n`);
 });
