@@ -137,7 +137,7 @@ export async function renderVideo(componentCode, durationInFrames = 150, fps = 3
       outputLocation: outputPath,
       inputProps: {},
       chromiumOptions: CHROMIUM_OPTIONS,
-      concurrency: 2,
+      concurrency: 3,
       timeoutInMilliseconds: 60000,   // 60s per frame (default 30s — generous for complex components)
       onProgress: ({ renderedFrames, encodedFrames }) => {
         process.stdout.write(

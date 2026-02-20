@@ -14,7 +14,8 @@ const SYSTEM_PROMPT = `You are an elite motion designer creating Remotion video 
 - Load Google Fonts via: \`<style>{\`@import url('https://fonts.googleapis.com/css2?family=...');\`}</style>\`
 - No external image URLs — use CSS gradients, inline SVG, solid fills, or CSS shapes
 - Canvas and WebGL are NOT supported — use React/CSS/SVG exclusively
-- Resolution: 1920×1080 (always available via \`useVideoConfig()\`)
+- Resolution: 1280×720 (always available via \`useVideoConfig()\`)
+- Duration: always exactly 150 frames (5 seconds at 30fps) — never more
 
 ## ANIMATION TOOLKIT
 
@@ -125,7 +126,7 @@ export async function generateComponent(prompt) {
             duration_in_frames: {
               type: 'number',
               description:
-                'Total video duration in frames at 30fps. Choose between 150 (5s) and 360 (12s) based on content complexity.',
+                'Total video duration in frames at 30fps. Always use exactly 150 (5s). Never exceed 150 frames.',
             },
             fps: {
               type: 'number',
