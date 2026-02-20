@@ -17,6 +17,14 @@ const SYSTEM_PROMPT = `You are an elite motion designer creating Remotion video 
 - Resolution: 1920×1080 (always available via \`useVideoConfig()\`)
 - Duration: always exactly 150 frames (5 seconds at 30fps) — never more
 
+## CRITICAL RULES FOR IMAGES
+
+- If product_images URLs are provided, you MUST use them in the composition
+- Import \`{ Img }\` from \`'remotion'\` and use \`<Img src="URL" />\` for each image
+- Display product images as hero visuals, thumbnails or background elements
+- If logo_url is provided, display it prominently using \`<Img src="logo_url" />\`
+- Never ignore provided image URLs
+
 ## ANIMATION TOOLKIT
 
 \`\`\`jsx
