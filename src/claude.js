@@ -104,7 +104,25 @@ Generic: Static numbers
 
 Create work that makes the viewer feel something.`;
 
-export async function generateComponent(prompt) {
+function buildUserPrompt(prompt, brain_context, product_images) {
+  let content = `Create a stunning, professional motion design video for this brief:\n\n"${prompt}"\n\nMake it visually spectacular — the kind of work that wins awards. Think about the emotional journey, the visual metaphors, and the kinetic energy. Every design choice should serve the message.`;
+
+  if (brain_context) {
+    content += `\n\n=== BRAND CONTEXT ===`;
+    if (brain_context.brand_name) content += `\nBrand name: ${brain_context.brand_name}`;
+    if (brain_context.colors)     content += `\nBrand colors: ${brain_context.colors}`;
+    if (brain_context.tone)       content += `\nBrand tone: ${brain_context.tone}`;
+    if (brain_context.logo_url)   content += `\nLogo URL: ${brain_context.logo_url}`;
+  }
+
+  if (product_images?.length) {
+    content += `\n\n=== PRODUCT IMAGES ===\nUse these images as visual references: ${product_images.join(', ')}`;
+  }
+
+  return content;
+}
+
+export async function generateComponent(prompt, { brain_context, product_images } = {}) {
   console.log(`[claude] Generating composition for: "${prompt.slice(0, 80)}"`);
 
   const message = await client.messages.create({
@@ -145,7 +163,7 @@ export async function generateComponent(prompt) {
     messages: [
       {
         role: 'user',
-        content: `Create a stunning, professional motion design video for this brief:\n\n"${prompt}"\n\nMake it visually spectacular — the kind of work that wins awards. Think about the emotional journey, the visual metaphors, and the kinetic energy. Every design choice should serve the message.`,
+        content: buildUserPrompt(prompt, brain_context, product_images),
       },
     ],
   });
