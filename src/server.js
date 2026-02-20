@@ -56,11 +56,38 @@ app.get('/health', (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Supabase helper — PATCH motion_studio_jobs row by job_id
+// ---------------------------------------------------------------------------
+async function patchSupabaseJob(supabaseUrl, supabaseKey, jobId, payload) {
+  const url = `${supabaseUrl}/rest/v1/motion_studio_jobs?id=eq.${jobId}`;
+  try {
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[supabase] PATCH failed (${res.status}): ${text}`);
+    } else {
+      console.log(`[supabase] PATCH job ${jobId} → ${JSON.stringify(payload)}`);
+    }
+  } catch (err) {
+    console.error(`[supabase] PATCH error:`, err.message);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // POST /generate  →  { jobId, status: "processing" }
 // Returns immediately — rendering happens in the background.
 // ---------------------------------------------------------------------------
 app.post('/generate', (req, res) => {
-  const { prompt } = req.body ?? {};
+  const { prompt, job_id, supabase_url, supabase_key } = req.body ?? {};
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Body must contain a non-empty "prompt" string.' });
@@ -71,6 +98,7 @@ app.post('/generate', (req, res) => {
 
   const jobId = uuidv4();
   const trimmed = prompt.trim();
+  const hasSupabase = job_id && supabase_url && supabase_key;
 
   jobs.set(jobId, {
     status: 'processing',
@@ -93,17 +121,28 @@ app.post('/generate', (req, res) => {
       const videoId = await renderVideo(component_code, duration_in_frames, fps);
 
       const url = `${BASE_URL}/videos/${videoId}.mp4`;
+      const duration_seconds = parseFloat((duration_in_frames / fps).toFixed(2));
 
       jobs.set(jobId, {
         status: 'done',
         url,
         title,
-        duration_seconds: parseFloat((duration_in_frames / fps).toFixed(2)),
+        duration_seconds,
         fps,
         createdAt: jobs.get(jobId)?.createdAt ?? Date.now(),
       });
 
       console.log(`[job:${jobId}] Done → ${url}`);
+
+      // Notify Supabase if credentials were provided
+      if (hasSupabase) {
+        await patchSupabaseJob(supabase_url, supabase_key, job_id, {
+          status: 'done',
+          video_url: url,
+          title,
+          duration: duration_seconds,
+        });
+      }
     } catch (err) {
       console.error(`[job:${jobId}] Error:`, err.message);
       jobs.set(jobId, {
@@ -111,6 +150,12 @@ app.post('/generate', (req, res) => {
         error: err.message,
         createdAt: jobs.get(jobId)?.createdAt ?? Date.now(),
       });
+
+      if (hasSupabase) {
+        await patchSupabaseJob(supabase_url, supabase_key, job_id, {
+          status: 'error',
+        });
+      }
     }
   })();
 
