@@ -14,7 +14,7 @@ const SYSTEM_PROMPT = `You are an elite motion designer creating Remotion video 
 - Load Google Fonts via: \`<style>{\`@import url('https://fonts.googleapis.com/css2?family=...');\`}</style>\`
 - No external image URLs — use CSS gradients, inline SVG, solid fills, or CSS shapes
 - Canvas and WebGL are NOT supported — use React/CSS/SVG exclusively
-- Resolution: 1280×720 (always available via \`useVideoConfig()\`)
+- Resolution: 1920×1080 (always available via \`useVideoConfig()\`)
 - Duration: always exactly 150 frames (5 seconds at 30fps) — never more
 
 ## ANIMATION TOOLKIT
