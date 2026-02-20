@@ -28,8 +28,8 @@ export const Root = () => {
       component={MainComposition}
       durationInFrames={${durationInFrames}}
       fps={${fps}}
-      width={1920}
-      height={1080}
+      width={1280}
+      height={720}
     />
   );
 };
@@ -71,6 +71,8 @@ const CHROMIUM_OPTIONS = {
     '--disable-gpu',
     '--no-first-run',
     '--no-zygote',
+    '--single-process',
+    '--max_old_space_size=512',
   ],
 };
 
@@ -135,6 +137,7 @@ export async function renderVideo(componentCode, durationInFrames = 240, fps = 3
       outputLocation: outputPath,
       inputProps: {},
       chromiumOptions: CHROMIUM_OPTIONS,
+      concurrency: 1,
       timeoutInMilliseconds: 60000,   // 60s per frame (default 30s — generous for complex components)
       onProgress: ({ renderedFrames, encodedFrames }) => {
         process.stdout.write(
