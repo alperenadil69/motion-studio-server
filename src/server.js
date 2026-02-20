@@ -140,7 +140,7 @@ app.post('/generate', (req, res) => {
           status: 'done',
           video_url: url,
           title,
-          duration: duration_seconds,
+          duration_seconds: duration_seconds,
         });
       }
     } catch (err) {
