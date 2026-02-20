@@ -90,7 +90,7 @@ export async function initBrowser() {
 
 // --- Main render function ---
 
-export async function renderVideo(componentCode, durationInFrames = 240, fps = 30) {
+export async function renderVideo(componentCode, durationInFrames = 150, fps = 30) {
   const id = uuidv4();
   const tmpDir = path.join(TMP_DIR, id);
   const outputPath = path.join(VIDEOS_DIR, `${id}.mp4`);
@@ -137,7 +137,7 @@ export async function renderVideo(componentCode, durationInFrames = 240, fps = 3
       outputLocation: outputPath,
       inputProps: {},
       chromiumOptions: CHROMIUM_OPTIONS,
-      concurrency: 1,
+      concurrency: 2,
       timeoutInMilliseconds: 60000,   // 60s per frame (default 30s — generous for complex components)
       onProgress: ({ renderedFrames, encodedFrames }) => {
         process.stdout.write(
