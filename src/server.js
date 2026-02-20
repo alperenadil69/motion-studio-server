@@ -56,30 +56,20 @@ app.get('/health', (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Supabase helper — PATCH motion_studio_jobs row by job_id
+// Supabase helper — call Edge Function to complete a job
 // ---------------------------------------------------------------------------
-async function patchSupabaseJob(supabaseUrl, supabaseKey, jobId, payload) {
-  const url = `${supabaseUrl}/rest/v1/motion_studio_jobs?id=eq.${jobId}`;
-  try {
-    const res = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(`[supabase] PATCH failed (${res.status}): ${text}`);
-    } else {
-      console.log(`[supabase] PATCH job ${jobId} → ${JSON.stringify(payload)}`);
-    }
-  } catch (err) {
-    console.error(`[supabase] PATCH error:`, err.message);
-  }
+async function patchSupabaseJob(jobId, supabaseUrl, supabaseKey, data) {
+  const url = 'https://kflhdlbbddjkurzxyumh.supabase.co/functions/v1/motion-studio-job-complete';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${supabaseKey}`
+    },
+    body: JSON.stringify({ job_id: jobId, ...data })
+  });
+  const body = await res.text();
+  console.log(`[supabase] Edge Function response ${res.status}:`, body);
 }
 
 // ---------------------------------------------------------------------------
@@ -136,7 +126,7 @@ app.post('/generate', (req, res) => {
 
       // Notify Supabase if credentials were provided
       if (hasSupabase) {
-        await patchSupabaseJob(supabase_url, supabase_key, job_id, {
+        await patchSupabaseJob(job_id, supabase_url, supabase_key, {
           status: 'done',
           video_url: url,
           title,
@@ -152,7 +142,7 @@ app.post('/generate', (req, res) => {
       });
 
       if (hasSupabase) {
-        await patchSupabaseJob(supabase_url, supabase_key, job_id, {
+        await patchSupabaseJob(job_id, supabase_url, supabase_key, {
           status: 'error',
         });
       }
