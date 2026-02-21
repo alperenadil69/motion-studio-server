@@ -78,6 +78,7 @@ async function patchSupabaseJob(jobId, supabaseUrl, supabaseKey, data) {
 // ---------------------------------------------------------------------------
 app.post('/generate', (req, res) => {
   const { prompt, job_id, supabase_url, supabase_key, brain_context, product_images, ratio } = req.body ?? {};
+  console.log('[server] received body:', { prompt: prompt?.slice(0, 50), ratio });
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Body must contain a non-empty "prompt" string.' });
