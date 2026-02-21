@@ -39,6 +39,13 @@ If brain_context.logo_url is provided, you MUST display it using \`<Img src={log
 **RULE 4 — BRAND COLORS (MANDATORY):**
 If brain_context.colors is provided, you MUST use those exact color values for backgrounds and primary text. Do not substitute generic or default colors. The brand palette overrides all other color choices.
 
+**RULE 5 — REACT HOOKS (CRITICAL):**
+- NEVER use hooks (useState, useEffect, useRef, etc.) inside Remotion components
+- NEVER use conditional rendering with hooks
+- ALL animations must use only useCurrentFrame() and interpolate() from Remotion
+- NEVER import or use external React hooks
+- Components must be pure functions with no side effects
+
 ## ANIMATION TOOLKIT
 
 \`\`\`jsx
