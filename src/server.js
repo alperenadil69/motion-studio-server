@@ -4,8 +4,10 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import { execSync } from 'child_process';
 import { generateComponent } from './claude.js';
 import { renderVideo, initBrowser } from './renderer.js';
+import { extractCaptions } from './captions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.join(__dirname, '..');
@@ -167,8 +169,36 @@ app.get('/job/:jobId', (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// POST /captions  →  { success, words }
+// ---------------------------------------------------------------------------
+app.post('/captions', async (req, res) => {
+  const { video_url, style, job_id, supabase_url, supabase_key } = req.body ?? {};
+
+  if (!video_url || !job_id) {
+    return res.status(400).json({ error: 'video_url and job_id are required.' });
+  }
+
+  try {
+    const words = await extractCaptions(video_url, job_id);
+    res.json({ success: true, words });
+  } catch (err) {
+    console.error(`[captions:${job_id}] Error:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
+
+// Verify ffmpeg is available
+try {
+  execSync('which ffmpeg', { stdio: 'pipe' });
+  console.log('[startup] ffmpeg found');
+} catch {
+  console.error('[startup] ffmpeg is NOT installed — /captions will not work');
+}
+
 console.log('Initialising browser…');
 await initBrowser();
 
@@ -176,5 +206,6 @@ app.listen(PORT, () => {
   console.log(`\nMotion Studio Server ready`);
   console.log(`  Health:   GET  ${BASE_URL}/health`);
   console.log(`  Generate: POST ${BASE_URL}/generate   { "prompt": "..." }`);
+  console.log(`  Captions: POST ${BASE_URL}/captions    { "video_url": "...", "job_id": "..." }`);
   console.log(`  Poll:     GET  ${BASE_URL}/job/:jobId\n`);
 });
