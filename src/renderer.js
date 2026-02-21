@@ -117,6 +117,9 @@ export async function renderVideo(componentCode, durationInFrames = 150, fps = 3
     });
 
     // Start the Lambda render
+    const width  = ratio === 'vertical' ? 1080 : 1920;
+    const height = ratio === 'vertical' ? 1920 : 1080;
+    console.log(`[renderer:${id}] Composition dimensions:`, { width, height, ratio });
     console.log(`[renderer:${id}] Launching Lambda render...`);
     const { renderId, bucketName: renderBucket } = await renderMediaOnLambda({
       region: REGION,
