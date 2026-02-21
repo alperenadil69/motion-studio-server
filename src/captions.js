@@ -173,7 +173,7 @@ export async function extractCaptions(
     // 0. Create job row in Supabase
     if (supabaseUrl && supabaseKey) {
       console.log(`[captions:${jobId}] Creating job in Supabase…`);
-      await fetch(`${supabaseUrl}/rest/v1/motion_studio_jobs`, {
+      const jobRes = await fetch(`${supabaseUrl}/rest/v1/motion_studio_jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -189,6 +189,9 @@ export async function extractCaptions(
           ratio: 'horizontal',
         }),
       });
+      console.log('[captions] job creation response status:', jobRes.status);
+      const responseText = await jobRes.text();
+      console.log('[captions] job creation response body:', responseText);
     }
 
     // 1. Download the video
