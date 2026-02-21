@@ -126,7 +126,7 @@ export async function renderVideo(componentCode, durationInFrames = 150, fps = 3
       inputProps: {},
       codec: 'h264',
       timeoutInMilliseconds: 120000,
-      framesPerLambda: 20,
+      framesPerLambda: 40,
     });
 
     // Poll until done
