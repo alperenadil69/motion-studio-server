@@ -173,7 +173,7 @@ app.get('/job/:jobId', (req, res) => {
 // POST /captions  →  { success, words }
 // ---------------------------------------------------------------------------
 app.post('/captions', async (req, res) => {
-  const { video_url, style, job_id, supabase_url, supabase_key } = req.body ?? {};
+  const { video_url, style, job_id, supabase_url, supabase_key, user_id, conversation_id } = req.body ?? {};
 
   if (!video_url || !job_id) {
     return res.status(400).json({ error: 'video_url and job_id are required.' });
@@ -183,7 +183,9 @@ app.post('/captions', async (req, res) => {
     const result = await extractCaptions(video_url, job_id, {
       style: style || 'heat',
       baseUrl: BASE_URL,
+      supabaseUrl: supabase_url,
       supabaseKey: supabase_key,
+      userId: user_id,
     });
     res.json({ success: true, words: result.words, video_url: result.video_url });
   } catch (err) {

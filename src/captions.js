@@ -159,7 +159,7 @@ async function notifyJobComplete(jobId, supabaseKey, videoUrl) {
 export async function extractCaptions(
   videoUrl,
   jobId,
-  { style = 'heat', baseUrl, supabaseKey } = {},
+  { style = 'heat', baseUrl, supabaseUrl, supabaseKey, userId } = {},
 ) {
   const videoPath = path.join('/tmp', `${jobId}.mp4`);
   const audioPath = path.join('/tmp', `${jobId}.wav`);
@@ -168,6 +168,27 @@ export async function extractCaptions(
   const outputPath = path.join('/tmp', outputFilename);
 
   try {
+    // 0. Create job row in Supabase
+    if (supabaseUrl && supabaseKey) {
+      console.log(`[captions:${jobId}] Creating job in Supabase…`);
+      await fetch(`${supabaseUrl}/rest/v1/motion_studio_jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          id: jobId,
+          user_id: userId,
+          prompt: `Captions — ${style}`,
+          status: 'pending',
+          ratio: 'horizontal',
+        }),
+      });
+    }
+
     // 1. Download the video
     console.log(`[captions:${jobId}] Downloading video…`);
     const res = await fetch(videoUrl);
