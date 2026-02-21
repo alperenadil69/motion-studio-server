@@ -26,13 +26,15 @@ function buildRootJsx(durationInFrames, fps, ratio) {
   const width  = ratio === 'vertical' ? 1080 : 1920;
   const height = ratio === 'vertical' ? 1920 : 1080;
   return `import { Composition } from 'remotion';
-import { MainComposition } from './Component';
+import Component from './Component';
+
+console.log("[renderer] component loaded:", !!Component);
 
 export const Root = () => {
   return (
     <Composition
       id="MainVideo"
-      component={MainComposition}
+      component={Component}
       durationInFrames={${durationInFrames}}
       fps={${fps}}
       width={${width}}

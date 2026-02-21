@@ -43,7 +43,14 @@ TECHNICAL RULES:
 - If logo_url or product images provided, use <Img> — always set width/height explicitly
 - Max component size: 10000 characters
 - No SVG paths, no complex clip-paths
-- All values calculated from frame number only`;
+- All values calculated from frame number only
+
+EXPORT RULES — MANDATORY:
+- The component MUST be exported as: export default function MyComponent() {}
+- The function name must be a valid PascalCase identifier
+- NEVER use: export default () => {} (anonymous arrow functions are forbidden)
+- NEVER use: module.exports
+- The component name must match exactly what is registered in registerRoot`;
 
 function buildUserPrompt(prompt, { brain_context, product_images, ratio } = {}) {
   let content = `Create a stunning, professional motion design video for this brief:\n\n"${prompt}"\n\nMake it visually spectacular — the kind of work that wins awards. Think about the emotional journey, the visual metaphors, and the kinetic energy. Every design choice should serve the message.`;
