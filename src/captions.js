@@ -150,6 +150,8 @@ async function notifyJobComplete(jobId, supabaseKey, videoUrl) {
   });
   const body = await res.text();
   console.log(`[captions] Edge Function response ${res.status}:`, body);
+  console.log('[captions] job_id sent to edge function:', jobId);
+  console.log('[captions] video_url sent:', videoUrl);
 }
 
 // ---------------------------------------------------------------------------
