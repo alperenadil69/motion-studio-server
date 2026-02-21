@@ -77,7 +77,7 @@ async function patchSupabaseJob(jobId, supabaseUrl, supabaseKey, data) {
 // Returns immediately — rendering happens in the background.
 // ---------------------------------------------------------------------------
 app.post('/generate', (req, res) => {
-  const { prompt, job_id, supabase_url, supabase_key, brain_context, product_images } = req.body ?? {};
+  const { prompt, job_id, supabase_url, supabase_key, brain_context, product_images, ratio } = req.body ?? {};
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return res.status(400).json({ error: 'Body must contain a non-empty "prompt" string.' });
@@ -104,11 +104,11 @@ app.post('/generate', (req, res) => {
     try {
       // Step 1 — Claude
       jobs.get(jobId).step = 'Generating component with Claude…';
-      const { component_code, duration_in_frames, fps, title } = await generateComponent(trimmed, { brain_context, product_images });
+      const { component_code, duration_in_frames, fps, title } = await generateComponent(trimmed, { brain_context, product_images, ratio });
 
       // Step 2 — Remotion
       jobs.get(jobId).step = 'Rendering video with Remotion…';
-      const videoId = await renderVideo(component_code, duration_in_frames, fps);
+      const videoId = await renderVideo(component_code, duration_in_frames, fps, ratio);
 
       const url = `${BASE_URL}/videos/${videoId}.mp4`;
       const duration_seconds = parseFloat((duration_in_frames / fps).toFixed(2));

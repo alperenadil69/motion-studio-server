@@ -15,7 +15,7 @@ const SYSTEM_PROMPT = `You are an elite motion designer creating Remotion video 
 - No external image URLs — use CSS gradients, inline SVG, solid fills, or CSS shapes
 - Canvas and WebGL are NOT supported — use React/CSS/SVG exclusively
 - Resolution: 1920×1080 (always available via \`useVideoConfig()\`)
-- Duration: always exactly 150 frames (5 seconds at 30fps) — never more
+- Duration: 150 frames by default (5s at 30fps) — if the brief specifies a duration, convert exactly (e.g. 10s = 300 frames)
 
 ## CRITICAL RULES FOR IMAGES
 
@@ -24,6 +24,20 @@ const SYSTEM_PROMPT = `You are an elite motion designer creating Remotion video 
 - Display product images as hero visuals, thumbnails or background elements
 - If logo_url is provided, display it prominently using \`<Img src="logo_url" />\`
 - Never ignore provided image URLs
+
+## MANDATORY RENDERING RULES — ABSOLUTE, NO EXCEPTIONS
+
+**RULE 1 — DURATION (CRITICAL):**
+If the user brief mentions a duration in seconds, you MUST convert it exactly to frames at 30fps and use that value. 10 seconds = 300 frames. 15 seconds = 450 frames. Never truncate or override a user-specified duration. If no duration is mentioned, default to 150 frames (5s).
+
+**RULE 2 — VERTICAL FORMAT (CRITICAL):**
+If ratio === "vertical" is indicated in the context, the composition MUST target a 1080×1920 portrait layout. Design all elements for vertical screen: stack vertically, use tall proportions, center content in a narrow column. Never output a landscape layout when vertical is requested.
+
+**RULE 3 — LOGO DISPLAY (MANDATORY):**
+If brain_context.logo_url is provided, you MUST display it using \`<Img src={logo_url} />\` in the final sequence of the composition. The logo is non-negotiable — it must appear. Do not skip it, do not replace it with text.
+
+**RULE 4 — BRAND COLORS (MANDATORY):**
+If brain_context.colors is provided, you MUST use those exact color values for backgrounds and primary text. Do not substitute generic or default colors. The brand palette overrides all other color choices.
 
 ## ANIMATION TOOLKIT
 
@@ -112,15 +126,19 @@ Generic: Static numbers
 
 Create work that makes the viewer feel something.`;
 
-function buildUserPrompt(prompt, brain_context, product_images) {
+function buildUserPrompt(prompt, { brain_context, product_images, ratio } = {}) {
   let content = `Create a stunning, professional motion design video for this brief:\n\n"${prompt}"\n\nMake it visually spectacular — the kind of work that wins awards. Think about the emotional journey, the visual metaphors, and the kinetic energy. Every design choice should serve the message.`;
+
+  if (ratio === 'vertical') {
+    content += `\n\n=== FORMAT ===\nRatio: vertical (1080×1920 portrait). Design all elements for a tall, narrow screen. Stack content vertically.`;
+  }
 
   if (brain_context) {
     content += `\n\n=== BRAND CONTEXT ===`;
     if (brain_context.brand_name) content += `\nBrand name: ${brain_context.brand_name}`;
-    if (brain_context.colors)     content += `\nBrand colors: ${brain_context.colors}`;
+    if (brain_context.colors)     content += `\nBrand colors: ${brain_context.colors} — MANDATORY: use these exact colors for backgrounds and text`;
     if (brain_context.tone)       content += `\nBrand tone: ${brain_context.tone}`;
-    if (brain_context.logo_url)   content += `\nLogo URL: ${brain_context.logo_url}`;
+    if (brain_context.logo_url)   content += `\nLogo URL: ${brain_context.logo_url} — MANDATORY: display with <Img src={logo_url} /> in the final sequence`;
   }
 
   if (product_images?.length) {
@@ -130,7 +148,7 @@ function buildUserPrompt(prompt, brain_context, product_images) {
   return content;
 }
 
-export async function generateComponent(prompt, { brain_context, product_images } = {}) {
+export async function generateComponent(prompt, { brain_context, product_images, ratio } = {}) {
   console.log(`[claude] Generating composition for: "${prompt.slice(0, 80)}"`);
 
   const message = await client.messages.create({
@@ -152,7 +170,7 @@ export async function generateComponent(prompt, { brain_context, product_images 
             duration_in_frames: {
               type: 'number',
               description:
-                'Total video duration in frames at 30fps. Always use exactly 150 (5s). Never exceed 150 frames.',
+                'Total video duration in frames at 30fps. Default: 150 (5s). If the brief specifies a duration, convert exactly: 10s = 300, 15s = 450, etc.',
             },
             fps: {
               type: 'number',
@@ -171,7 +189,7 @@ export async function generateComponent(prompt, { brain_context, product_images 
     messages: [
       {
         role: 'user',
-        content: buildUserPrompt(prompt, brain_context, product_images),
+        content: buildUserPrompt(prompt, { brain_context, product_images, ratio }),
       },
     ],
   });

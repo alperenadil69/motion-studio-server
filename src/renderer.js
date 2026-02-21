@@ -22,7 +22,9 @@ const FUNCTION_NAME = process.env.REMOTION_FUNCTION_NAME;
 
 // --- Template builders ---
 
-function buildRootJsx(durationInFrames, fps) {
+function buildRootJsx(durationInFrames, fps, ratio) {
+  const width  = ratio === 'vertical' ? 1080 : 1920;
+  const height = ratio === 'vertical' ? 1920 : 1080;
   return `import { Composition } from 'remotion';
 import { MainComposition } from './Component';
 
@@ -33,8 +35,8 @@ export const Root = () => {
       component={MainComposition}
       durationInFrames={${durationInFrames}}
       fps={${fps}}
-      width={1920}
-      height={1080}
+      width={${width}}
+      height={${height}}
     />
   );
 };
@@ -74,7 +76,7 @@ export async function initBrowser() {
 
 // --- Main render function ---
 
-export async function renderVideo(componentCode, durationInFrames = 150, fps = 30) {
+export async function renderVideo(componentCode, durationInFrames = 150, fps = 30, ratio = 'landscape') {
   const id = uuidv4();
   const tmpDir = path.join(TMP_DIR, id);
   const outputPath = path.join(VIDEOS_DIR, `${id}.mp4`);
@@ -96,7 +98,7 @@ export async function renderVideo(componentCode, durationInFrames = 150, fps = 3
     await fs.mkdir(tmpDir, { recursive: true });
     await Promise.all([
       fs.writeFile(path.join(tmpDir, 'Component.jsx'), componentCode, 'utf-8'),
-      fs.writeFile(path.join(tmpDir, 'Root.jsx'), buildRootJsx(durationInFrames, fps), 'utf-8'),
+      fs.writeFile(path.join(tmpDir, 'Root.jsx'), buildRootJsx(durationInFrames, fps, ratio), 'utf-8'),
       fs.writeFile(path.join(tmpDir, 'index.jsx'), INDEX_JSX, 'utf-8'),
     ]);
 
