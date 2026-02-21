@@ -179,8 +179,12 @@ app.post('/captions', async (req, res) => {
   }
 
   try {
-    const words = await extractCaptions(video_url, job_id);
-    res.json({ success: true, words });
+    const result = await extractCaptions(video_url, job_id, {
+      style: style || 'heat',
+      supabaseUrl: supabase_url,
+      supabaseKey: supabase_key,
+    });
+    res.json({ success: true, words: result.words, video_url: result.video_url });
   } catch (err) {
     console.error(`[captions:${job_id}] Error:`, err.message);
     res.status(500).json({ error: err.message });
