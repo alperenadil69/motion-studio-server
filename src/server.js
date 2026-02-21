@@ -49,6 +49,7 @@ app.options('*', cors()); // respond to all preflight OPTIONS requests
 
 app.use(express.json({ limit: '10kb' }));
 app.use('/videos', express.static(path.join(ROOT_DIR, 'videos')));
+app.use('/captions-output', express.static('/tmp', { maxAge: '2h' }));
 
 // ---------------------------------------------------------------------------
 // GET /health
@@ -181,7 +182,7 @@ app.post('/captions', async (req, res) => {
   try {
     const result = await extractCaptions(video_url, job_id, {
       style: style || 'heat',
-      supabaseUrl: supabase_url,
+      baseUrl: BASE_URL,
       supabaseKey: supabase_key,
     });
     res.json({ success: true, words: result.words, video_url: result.video_url });

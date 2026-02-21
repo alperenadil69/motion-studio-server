@@ -134,47 +134,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 }
 
 // ---------------------------------------------------------------------------
-// Supabase helpers
+// Edge Function helper
 // ---------------------------------------------------------------------------
-
-async function ensureBucket(supabaseUrl, supabaseKey) {
-  const res = await fetch(`${supabaseUrl}/storage/v1/bucket`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-    body: JSON.stringify({
-      id: 'captions-output',
-      name: 'captions-output',
-      public: true,
-    }),
-  });
-  // 409 = already exists — that's fine
-  if (res.ok || res.status === 409) return;
-  console.warn(`[captions] ensureBucket response: ${res.status}`);
-}
-
-async function uploadToSupabase(filePath, fileName, supabaseUrl, supabaseKey) {
-  const fileBuffer = fs.readFileSync(filePath);
-  const res = await fetch(
-    `${supabaseUrl}/storage/v1/object/captions-output/${fileName}`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${supabaseKey}`,
-        'Content-Type': 'video/mp4',
-        'x-upsert': 'true',
-      },
-      body: fileBuffer,
-    },
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Supabase upload failed (${res.status}): ${body}`);
-  }
-  return `${supabaseUrl}/storage/v1/object/public/captions-output/${fileName}`;
-}
 
 async function notifyJobComplete(jobId, supabaseKey, videoUrl) {
   const url =
@@ -198,12 +159,13 @@ async function notifyJobComplete(jobId, supabaseKey, videoUrl) {
 export async function extractCaptions(
   videoUrl,
   jobId,
-  { style = 'heat', supabaseUrl, supabaseKey } = {},
+  { style = 'heat', baseUrl, supabaseKey } = {},
 ) {
   const videoPath = path.join('/tmp', `${jobId}.mp4`);
   const audioPath = path.join('/tmp', `${jobId}.wav`);
   const assPath = path.join('/tmp', `${jobId}.ass`);
-  const outputPath = path.join('/tmp', `${jobId}-captioned.mp4`);
+  const outputFilename = `${jobId}-captioned.mp4`;
+  const outputPath = path.join('/tmp', outputFilename);
 
   try {
     // 1. Download the video
@@ -250,22 +212,19 @@ export async function extractCaptions(
     );
     console.log(`[captions:${jobId}] Subtitles burned`);
 
-    // 6. Upload to Supabase Storage
-    let publicUrl = null;
-    if (supabaseUrl && supabaseKey) {
-      console.log(`[captions:${jobId}] Uploading to Supabase…`);
-      await ensureBucket(supabaseUrl, supabaseKey);
-      const fileName = `${jobId}.mp4`;
-      publicUrl = await uploadToSupabase(outputPath, fileName, supabaseUrl, supabaseKey);
-      console.log(`[captions:${jobId}] Uploaded → ${publicUrl}`);
+    // 6. Serve via Railway — file stays in /tmp, served by GET /captions-output/:filename
+    const publicUrl = `${baseUrl}/captions-output/${outputFilename}`;
+    console.log(`[captions:${jobId}] Serving at → ${publicUrl}`);
 
-      // 7. Notify Edge Function
+    // 7. Notify Edge Function
+    if (supabaseKey) {
       await notifyJobComplete(jobId, supabaseKey, publicUrl);
     }
 
     return { words, video_url: publicUrl };
   } finally {
-    for (const f of [videoPath, audioPath, assPath, outputPath]) {
+    // Clean up everything except the captioned output (served by Express)
+    for (const f of [videoPath, audioPath, assPath]) {
       try { fs.unlinkSync(f); } catch {}
     }
   }
