@@ -2,6 +2,7 @@ FROM node:20-slim
 
 # Chrome dependencies required by Remotion's headless renderer
 RUN apt-get update && apt-get install -y \
+  ffmpeg \
   chromium \
   fonts-liberation \
   fonts-noto-color-emoji \
