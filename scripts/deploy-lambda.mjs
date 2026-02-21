@@ -11,7 +11,7 @@ const REGION = process.env.AWS_REGION || 'us-east-1';
 const ROLE_NAME = 'remotion-lambda-role';
 const POLICY_NAME = 'remotion-lambda-policy';
 const MEMORY_SIZE = 2048; // MB
-const TIMEOUT = 120;      // seconds
+const TIMEOUT = 240;      // seconds
 const DISK_SIZE = 2048;   // MB
 
 // Exact policy recommended by: npx remotion lambda policies role
