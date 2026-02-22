@@ -7,6 +7,12 @@ import {
   interpolate,
   spring,
 } from 'remotion';
+import { loadFont } from '@remotion/fonts';
+
+loadFont({
+  family: 'Noto Serif',
+  url: 'https://fonts.gstatic.com/s/notoserif/v23/ga6Iaw1J5X9T9RW6j9bNfFImZzC7TMQ.woff2',
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -122,27 +128,29 @@ function renderElegant(words, frame, fps) {
     extrapolateRight: 'clamp',
   });
 
+  // Active word = last word in the group whose start <= current frame
+  const activeWord = [...group].reverse().find(
+    (w) => toFrame(w.start, fps) <= frame,
+  );
+
   return (
     <div style={{ ...bottomContainer, opacity: entrance }}>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
         {group.map((w, i) => {
-          const active = isWordActive(w, frame, fps);
+          const active = activeWord && w === activeWord;
           return (
             <span
               key={i}
               style={{
-                fontFamily: active
-                  ? "'Noto Serif', Georgia, serif"
-                  : 'system-ui, sans-serif',
+                fontFamily: active ? "'Noto Serif', serif" : 'system-ui, sans-serif',
                 fontStyle: active ? 'italic' : 'normal',
-                fontWeight: active ? 400 : 500,
-                fontSize: active ? 80 : 64,
+                fontWeight: active ? 400 : 600,
+                fontSize: active ? 88 : 64,
                 color: '#FFFFFF',
                 filter: active
-                  ? 'drop-shadow(0 0 25px rgba(255,255,255,0.9))'
+                  ? 'drop-shadow(0 0 30px white) drop-shadow(0 0 60px white)'
                   : 'none',
-                textShadow:
-                  '3px 3px 6px rgba(0,0,0,0.9), -1px -1px 4px rgba(0,0,0,0.7)',
+                textShadow: active ? 'none' : '2px 2px 8px black',
               }}
             >
               {w.word}
