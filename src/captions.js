@@ -1,14 +1,35 @@
 import fs from 'fs';
+import fsp from 'fs/promises';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+import { createWriteStream } from 'fs';
+import { pipeline } from 'stream/promises';
+import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai';
+import {
+  deploySite,
+  deleteSite,
+  getOrCreateBucket,
+  renderMediaOnLambda,
+  getRenderProgress,
+} from '@remotion/lambda';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 
 const execFileAsync = promisify(execFile);
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.join(__dirname, '..');
+const TMP_DIR = path.join(ROOT_DIR, 'tmp');
+const REGION = process.env.AWS_REGION || 'us-east-1';
+const FUNCTION_NAME = process.env.REMOTION_FUNCTION_NAME;
+
+const REMOTION_STYLES = ['heat-glow', 'elegant', 'word-pop', 'cinematic', 'emoji-auto'];
+
 // ---------------------------------------------------------------------------
-// ASS helpers
+// ASS helpers (for ffmpeg-based styles)
 // ---------------------------------------------------------------------------
 
 function formatAssTime(seconds) {
@@ -19,11 +40,10 @@ function formatAssTime(seconds) {
   return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
 }
 
-function groupWords(words) {
+function groupWordsAss(words) {
   const groups = [];
   for (let i = 0; i < words.length;) {
     const remaining = words.length - i;
-    // If taking 3 would leave exactly 1 orphan, take 4 instead
     const size = remaining >= 7 ? 3 : remaining >= 4 ? 4 : remaining;
     groups.push(words.slice(i, i + size));
     i += size;
@@ -31,61 +51,42 @@ function groupWords(words) {
   return groups;
 }
 
-// ---------------------------------------------------------------------------
-// Style definitions — ASS colours are &HAABBGGRR
-// ---------------------------------------------------------------------------
 const STYLE_DEFS = {
   heat: {
     fontsize: 52, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H00000000',
-    outline: 2, shadow: 1, borderStyle: 1,
-    alignment: 2, marginV: 60,
-    highlight: '&H000000FF', // red
+    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
+    outline: 2, shadow: 1, borderStyle: 1, alignment: 2, marginV: 60,
+    highlight: '&H000000FF',
   },
   bold: {
     fontsize: 72, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H00000000',
-    outline: 3, shadow: 2, borderStyle: 1,
-    alignment: 5, marginV: 30,
-    highlight: null,
-    uppercase: true,
+    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
+    outline: 3, shadow: 2, borderStyle: 1, alignment: 5, marginV: 30,
+    highlight: null, uppercase: true,
   },
   minimal: {
     fontsize: 40, bold: 0, italic: 0,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H80000000',
-    outline: 0, shadow: 0, borderStyle: 3,
-    alignment: 2, marginV: 50,
+    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H80000000',
+    outline: 0, shadow: 0, borderStyle: 3, alignment: 2, marginV: 50,
     highlight: null,
   },
   neon: {
     fontsize: 52, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H00000000',
-    outline: 2, shadow: 1, borderStyle: 1,
-    alignment: 2, marginV: 60,
-    highlight: '&H0000FFFF', // yellow
+    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
+    outline: 2, shadow: 1, borderStyle: 1, alignment: 2, marginV: 60,
+    highlight: '&H0000FFFF',
   },
   elegant: {
     fontsize: 44, bold: 0, italic: 1,
-    primaryColour: '&H00FFFFFF',
-    outlineColour: '&H00000000',
-    backColour: '&H00000000',
-    outline: 1, shadow: 0, borderStyle: 1,
-    alignment: 2, marginV: 60,
+    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
+    outline: 1, shadow: 0, borderStyle: 1, alignment: 2, marginV: 60,
     highlight: null,
   },
 };
 
 function generateAss(words, style) {
   const def = STYLE_DEFS[style] || STYLE_DEFS.heat;
-  const groups = groupWords(words);
+  const groups = groupWordsAss(words);
 
   let ass = `[Script Info]
 Title: Captions
@@ -106,7 +107,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     const groupEnd = group[group.length - 1].end;
 
     if (def.highlight) {
-      // One dialogue line per word — active word gets highlight colour
       for (let w = 0; w < group.length; w++) {
         const wStart = formatAssTime(group[w].start);
         const wEnd = formatAssTime(
@@ -131,6 +131,160 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   }
 
   return ass;
+}
+
+// ---------------------------------------------------------------------------
+// Remotion Lambda helpers (for premium styles)
+// ---------------------------------------------------------------------------
+
+function buildCaptionsRootJsx(durationInFrames, fps, width, height) {
+  return `import { Composition } from 'remotion';
+import { CaptionsComposition } from './CaptionsComposition';
+
+export const Root = () => (
+  <Composition
+    id="CaptionsVideo"
+    component={CaptionsComposition}
+    durationInFrames={${durationInFrames}}
+    fps={${fps}}
+    width={${width}}
+    height={${height}}
+  />
+);
+`;
+}
+
+const CAPTIONS_INDEX_JSX = `import { registerRoot } from 'remotion';
+import { Root } from './Root';
+
+registerRoot(Root);
+`;
+
+function webpackOverride(config) {
+  return {
+    ...config,
+    resolve: {
+      ...config.resolve,
+      modules: [
+        path.join(ROOT_DIR, 'node_modules'),
+        'node_modules',
+        ...(config.resolve?.modules ?? []),
+      ],
+    },
+  };
+}
+
+async function getVideoDimensions(videoPath) {
+  try {
+    const { stdout } = await execFileAsync('ffprobe', [
+      '-v', 'quiet', '-print_format', 'json', '-show_streams', videoPath,
+    ]);
+    const data = JSON.parse(stdout);
+    const vs = data.streams.find((s) => s.codec_type === 'video');
+    if (vs) {
+      return {
+        width: vs.width,
+        height: vs.height,
+        duration: parseFloat(vs.duration || '0'),
+      };
+    }
+  } catch (e) {
+    console.warn(`[captions] Could not detect video dimensions: ${e.message}`);
+  }
+  return { width: 1920, height: 1080, duration: 0 };
+}
+
+async function renderCaptionsWithRemotion(videoUrl, words, style, jobId, { width = 1920, height = 1080, fps = 30, emojiCues = [] } = {}) {
+  const id = uuidv4();
+  const tmpDir = path.join(TMP_DIR, `captions-${id}`);
+  const outputPath = path.join('/tmp', `${jobId}-captioned.mp4`);
+  let siteName = null;
+  let bucketName = null;
+
+  const lastWord = words[words.length - 1];
+  const durationInFrames = Math.ceil((lastWord.end + 0.5) * fps);
+
+  try {
+    // 1. Write composition files to temp dir
+    await fsp.mkdir(tmpDir, { recursive: true });
+
+    const compositionSrc = path.join(__dirname, 'captions-remotion', 'CaptionsComposition.jsx');
+    await fsp.copyFile(compositionSrc, path.join(tmpDir, 'CaptionsComposition.jsx'));
+    await Promise.all([
+      fsp.writeFile(path.join(tmpDir, 'Root.jsx'), buildCaptionsRootJsx(durationInFrames, fps, width, height), 'utf-8'),
+      fsp.writeFile(path.join(tmpDir, 'index.jsx'), CAPTIONS_INDEX_JSX, 'utf-8'),
+    ]);
+
+    // 2. Get S3 bucket
+    ({ bucketName } = await getOrCreateBucket({ region: REGION }));
+
+    // 3. Bundle and deploy to S3
+    siteName = `ms-captions-${id}`;
+    console.log(`[captions-remotion:${jobId}] Bundling and deploying to S3 (site: ${siteName})…`);
+    const { serveUrl } = await deploySite({
+      region: REGION,
+      bucketName,
+      entryPoint: path.join(tmpDir, 'index.jsx'),
+      siteName,
+      options: { webpackOverride },
+    });
+
+    // 4. Start Lambda render
+    console.log(`[captions-remotion:${jobId}] Launching Lambda render…`);
+    const { renderId, bucketName: renderBucket } = await renderMediaOnLambda({
+      region: REGION,
+      functionName: FUNCTION_NAME,
+      serveUrl,
+      composition: 'CaptionsVideo',
+      inputProps: { videoUrl, words, style, emojiCues },
+      codec: 'h264',
+      timeoutInMilliseconds: 240000,
+      framesPerLambda: 60,
+    });
+
+    // 5. Poll until done
+    console.log(`[captions-remotion:${jobId}] Polling render ${renderId}…`);
+    let outKey, outBucket;
+    while (true) {
+      await new Promise((r) => setTimeout(r, 4000));
+      const progress = await getRenderProgress({
+        renderId,
+        bucketName: renderBucket,
+        functionName: FUNCTION_NAME,
+        region: REGION,
+      });
+
+      process.stdout.write(
+        `\r[captions-remotion:${jobId}] Lambda progress: ${Math.round(progress.overallProgress * 100)}%   `,
+      );
+
+      if (progress.fatalErrorEncountered) {
+        throw new Error(progress.errors?.[0]?.message ?? 'Lambda render failed');
+      }
+      if (progress.done) {
+        outKey = progress.outKey;
+        outBucket = progress.outBucket ?? renderBucket;
+        break;
+      }
+    }
+    process.stdout.write('\n');
+
+    // 6. Download rendered MP4 from S3
+    console.log(`[captions-remotion:${jobId}] Downloading result from S3…`);
+    const s3 = new S3Client({ region: REGION });
+    const { Body } = await s3.send(new GetObjectCommand({ Bucket: outBucket, Key: outKey }));
+    await pipeline(Body, createWriteStream(outputPath));
+
+    console.log(`[captions-remotion:${jobId}] Done → ${outputPath}`);
+    return outputPath;
+
+  } finally {
+    await fsp.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+    if (siteName && bucketName) {
+      await deleteSite({ region: REGION, bucketName, siteName })
+        .catch((e) => console.warn(`[captions-remotion] Failed to delete temp site ${siteName}:`, e.message));
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -161,7 +315,7 @@ async function notifyJobComplete(jobId, supabaseKey, videoUrl) {
 export async function extractCaptions(
   videoUrl,
   jobId,
-  { style = 'heat', baseUrl, supabaseUrl, supabaseKey, userId } = {},
+  { style = 'heat', baseUrl, supabaseUrl, supabaseKey, userId, emojiCues = [] } = {},
 ) {
   const videoPath = path.join('/tmp', `${jobId}.mp4`);
   const audioPath = path.join('/tmp', `${jobId}.wav`);
@@ -224,32 +378,43 @@ export async function extractCaptions(
       return { words, video_url: null };
     }
 
-    // 4. Generate .ass subtitle file
-    console.log(`[captions:${jobId}] Generating .ass (style: ${style})…`);
-    const assContent = generateAss(words, style);
-    fs.writeFileSync(assPath, assContent);
+    // 4. Render captions — Remotion Lambda or ffmpeg
+    if (REMOTION_STYLES.includes(style)) {
+      // --- Remotion Lambda path ---
+      console.log(`[captions:${jobId}] Using Remotion Lambda pipeline for style: ${style}`);
+      const { width, height } = await getVideoDimensions(videoPath);
+      await renderCaptionsWithRemotion(videoUrl, words, style, jobId, {
+        width,
+        height,
+        fps: 30,
+        emojiCues,
+      });
+    } else {
+      // --- ffmpeg / ASS path ---
+      console.log(`[captions:${jobId}] Generating .ass (style: ${style})…`);
+      const assContent = generateAss(words, style);
+      fs.writeFileSync(assPath, assContent);
 
-    // 5. Burn subtitles into video
-    console.log(`[captions:${jobId}] Burning subtitles…`);
-    await execFileAsync(
-      'ffmpeg',
-      ['-i', videoPath, '-vf', `ass=${assPath}`, '-c:a', 'copy', '-y', outputPath],
-      { timeout: 120_000 },
-    );
-    console.log(`[captions:${jobId}] Subtitles burned`);
+      console.log(`[captions:${jobId}] Burning subtitles…`);
+      await execFileAsync(
+        'ffmpeg',
+        ['-i', videoPath, '-vf', `ass=${assPath}`, '-c:a', 'copy', '-y', outputPath],
+        { timeout: 120_000 },
+      );
+      console.log(`[captions:${jobId}] Subtitles burned`);
+    }
 
-    // 6. Serve via Railway — file stays in /tmp, served by GET /captions-output/:filename
+    // 5. Serve via Railway
     const publicUrl = `${baseUrl}/captions-output/${outputFilename}`;
     console.log(`[captions:${jobId}] Serving at → ${publicUrl}`);
 
-    // 7. Notify Edge Function
+    // 6. Notify Edge Function
     if (supabaseKey) {
       await notifyJobComplete(jobId, supabaseKey, publicUrl);
     }
 
     return { words, video_url: publicUrl };
   } finally {
-    // Clean up everything except the captioned output (served by Express)
     for (const f of [videoPath, audioPath, assPath]) {
       try { fs.unlinkSync(f); } catch {}
     }
