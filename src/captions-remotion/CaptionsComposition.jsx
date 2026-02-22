@@ -23,6 +23,9 @@ loadFont({ family: 'Montserrat', url: 'https://fonts.gstatic.com/s/montserrat/v2
 loadFont({ family: 'Poppins', url: 'https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2' });
 loadFont({ family: 'Cinzel', url: 'https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2' });
 loadFont({ family: 'Caveat', url: 'https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9SIKjYBxPigs.woff2' });
+loadFont({ family: 'EB Garamond', url: 'https://fonts.gstatic.com/s/ebgaramond/v27/SlGDmQSNjdsmc35JDF1K5E55YMjF_7DPuGi-6_RUA4V-e6yHgQ.woff2' });
+loadFont({ family: 'DM Sans', url: 'https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhS23.woff2' });
+loadFont({ family: 'Luckiest Guy', url: 'https://fonts.gstatic.com/s/luckiestguy/v22/BjS0t9cLf94Cy1lz7HDBhmxoVPjmYg.woff2' });
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -230,8 +233,8 @@ function renderZodiac(words, frame, fps) {
   const entrance = interpolate(frame, [groupStart, groupStart + 8], [0, 1], clamp);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ background: '#1E293B', padding: '18px 36px', borderRadius: 12, display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Cinzel', serif", fontWeight: 900, fontSize: 54, color: '#C9A84C', textTransform: 'uppercase', textShadow: '0 4px 8px rgba(0,0,0,0.5)' }}>{w.word}</span>))}
+      <div style={{ background: '#1A2744', padding: '18px 36px', borderRadius: 12, display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Cinzel', serif", fontWeight: 900, fontSize: 54, color: '#D4C68A', textTransform: 'uppercase', textShadow: '0 4px 8px rgba(0,0,0,0.5)' }}>{w.word}</span>))}
       </div>
     </div>
   );
@@ -290,7 +293,7 @@ function renderCove(words, frame, fps) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: active ? "'Dancing Script', cursive" : "'Poppins', sans-serif", fontWeight: active ? 700 : 400, fontSize: active ? 72 : 48, color: '#FFFFFF', textShadow: active ? '0 0 15px rgba(255,255,255,0.6), 2px 2px 8px rgba(0,0,0,0.7)' : '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: active ? "'Dancing Script', cursive" : "'Poppins', sans-serif", fontWeight: active ? 700 : 400, fontSize: active ? 72 : 48, color: '#FFFFFF', textShadow: active ? '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)' : '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -348,11 +351,11 @@ function renderDailyMail(words, frame, fps) {
   const line1 = group.slice(0, 3);
   const line2 = group.slice(3);
   const renderLine = (lineWords) => (
-    <div style={{ background: '#1E1B4B', padding: '10px 20px', borderRadius: 6, display: 'flex', gap: 12, justifyContent: 'flex-start' }}>
+    <div style={{ padding: '10px 20px', borderRadius: 6, display: 'flex', gap: 12, justifyContent: 'flex-start' }}>
       {lineWords.map((w, i) => {
         const active = activeWord && w === activeWord;
         const past = toFrame(w.end, fps) < frame;
-        return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 52, color: (active || past) ? '#FFFFFF' : '#9CA3AF' }}>{w.word}</span>);
+        return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 52, color: '#FFFFFF', textTransform: 'uppercase', WebkitTextStroke: '2px #0000FF' }}>{w.word}</span>);
       })}
     </div>
   );
@@ -382,7 +385,7 @@ function renderEclipse(words, frame, fps) {
     <div style={{ background: '#2D1B69', padding: '10px 20px', borderRadius: 6, display: 'flex', gap: 12, justifyContent: 'flex-start' }}>
       {lineWords.map((w, i) => {
         const active = activeWord && w === activeWord;
-        return (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: 48, color: active ? '#FFFFFF' : '#D1D5DB' }}>{w.word}</span>);
+        return (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400, fontSize: 48, color: active ? '#FFFFFF' : '#A78BFA' }}>{w.word}</span>);
       })}
     </div>
   );
@@ -408,7 +411,7 @@ function renderSuzy(words, frame, fps) {
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
-        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 48, color: '#F59E0B', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
+        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 48, color: '#D97706', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
       </div>
     </div>
   );
@@ -425,8 +428,8 @@ function renderMilkyWay(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.6, 1.0]);
   return (
     <div style={centerContainer}>
-      <div style={{ background: '#7C3AED', padding: '18px 40px', borderRadius: 14, transform: `scale(${scale})`, boxShadow: '0 4px 20px rgba(124,58,237,0.4)' }}>
-        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 90, color: '#22C55E', textTransform: 'uppercase' }}>{active.word}</span>
+      <div style={{ background: '#7C3AED', padding: '15px 40px', borderRadius: 20, transform: `scale(${scale})`, boxShadow: '0 4px 20px rgba(124,58,237,0.4)' }}>
+        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 90, color: '#FFFFFF', textTransform: 'uppercase' }}>{active.word}</span>
       </div>
     </div>
   );
@@ -461,7 +464,7 @@ function renderAlcyone(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.7, 1.0]);
   return (
     <div style={centerContainer}>
-      <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 80, color: '#FFFFFF', textTransform: 'uppercase', textShadow: '0 0 20px rgba(167,139,250,0.7), 0 0 40px rgba(167,139,250,0.4)', transform: `scale(${scale})` }}>{active.word}</span>
+      <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 80, color: '#A78BFA', textTransform: 'uppercase', textShadow: '0 0 15px rgba(167,139,250,0.6)', transform: `scale(${scale})` }}>{active.word}</span>
     </div>
   );
 }
@@ -514,7 +517,7 @@ function renderMarigold(words, frame, fps) {
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
-        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 48, color: '#F59E0B', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
+        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 48, color: '#E8B84D', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
       </div>
     </div>
   );
@@ -566,7 +569,7 @@ function renderPoem(words, frame, fps) {
   const fadeIn = interpolate(frame, [wordStart, wordStart + 6], [0, 1], clamp);
   return (
     <div style={{ ...centerContainer, opacity: fadeIn }}>
-      <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 52, color: '#94A3B8', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{active.word}</span>
+      <span style={{ fontFamily: "'EB Garamond', serif", fontStyle: 'italic', fontWeight: 400, fontSize: 52, color: '#D1D5DB', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{active.word}</span>
     </div>
   );
 }
@@ -582,8 +585,8 @@ function renderEnergy(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.8, 1.0]);
   return (
     <div style={centerContainer}>
-      <div style={{ background: '#F3F4F6', padding: '18px 40px', borderRadius: 16, transform: `scale(${scale})`, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 64, color: '#374151', textTransform: 'lowercase' }}>{active.word}</span>
+      <div style={{ background: '#F9FAFB', padding: '18px 40px', borderRadius: 16, transform: `scale(${scale})`, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 64, color: '#4B5563', textTransform: 'lowercase' }}>{active.word}</span>
       </div>
     </div>
   );
@@ -600,7 +603,7 @@ function renderRecess(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.6, 1.0]);
   return (
     <div style={centerContainer}>
-      <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 100, textTransform: 'uppercase', color: '#FFFFFF', transform: `scale(${scale})`, textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>{active.word}</span>
+      <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 100, textTransform: 'uppercase', color: '#FFFFFF', transform: `scale(${scale})`, textShadow: '2px 2px 4px rgba(0,0,0,0.3)', background: 'rgba(34,197,94,0.3)', borderRadius: 6, padding: '4px 12px' }}>{active.word}</span>
     </div>
   );
 }
@@ -634,7 +637,7 @@ function renderMizar(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.7, 1.0]);
   return (
     <div style={centerContainer}>
-      <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 80, textTransform: 'uppercase', color: '#7C3AED', textShadow: '0 0 15px rgba(124,58,237,0.6)', transform: `scale(${scale})` }}>{active.word}</span>
+      <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 80, textTransform: 'uppercase', color: '#A78BFA', textShadow: '0 0 15px rgba(124,58,237,0.6)', transform: `scale(${scale})` }}>{active.word}</span>
     </div>
   );
 }
@@ -654,7 +657,7 @@ function renderPulse(words, frame, fps) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 56, textTransform: 'uppercase', color: active ? '#84CC16' : '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 56, textTransform: 'uppercase', color: active ? '#EC4899' : '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -672,8 +675,8 @@ function renderLinear(words, frame, fps) {
   const scale = interpolate(sv, [0, 1], [0.7, 1.0]);
   return (
     <div style={centerContainer}>
-      <div style={{ background: '#1E1B4B', padding: '16px 36px', borderRadius: 12, transform: `scale(${scale})` }}>
-        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 64, textTransform: 'uppercase', color: '#22C55E' }}>{active.word}</span>
+      <div style={{ background: '#FFFFFF', padding: '16px 36px', borderRadius: 12, transform: `scale(${scale})` }}>
+        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 64, textTransform: 'uppercase', color: '#000000' }}>{active.word}</span>
       </div>
     </div>
   );
@@ -691,10 +694,10 @@ function renderCartwheelBlack(words, frame, fps) {
   const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
+      <div style={{ background: '#374151', borderRadius: 10, padding: '12px 24px', display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 60, textTransform: 'uppercase', color: active ? '#FACC15' : '#A855F7', transform: active ? 'scale(1.3)' : 'scale(1)', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: active ? 78 : 60, textTransform: 'uppercase', color: active ? '#FACC15' : '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -714,11 +717,14 @@ function renderFootprintV3(words, frame, fps) {
   const rotatingColors = ['#EF4444', '#FBBF24', '#10B981', '#3B82F6', '#A855F7'];
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
-        {group.map((w, i) => {
-          const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, textTransform: 'uppercase', color: active ? rotatingColors[i % 5] : '#FFFFFF', transform: active ? 'scale(1.2)' : 'scale(1)', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
-        })}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 60 }}>{'\uD83D\uDC4D'}</span>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
+          {group.map((w, i) => {
+            const active = activeWord && w === activeWord;
+            return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: active ? 120 : 60, textTransform: 'uppercase', color: active ? '#22C55E' : '#FACC15', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          })}
+        </div>
       </div>
     </div>
   );
@@ -736,10 +742,9 @@ function renderAndromeda(words, frame, fps) {
   const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
+      <div style={{ background: '#000000', borderRadius: 10, padding: '12px 24px', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
         {group.map((w, i) => {
-          const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, fontSize: 56, color: active ? '#C084FC' : '#E9D5FF', filter: active ? 'drop-shadow(0 0 16px #C084FC)' : 'none', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, fontSize: 56, color: '#FFFFFF' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -758,10 +763,9 @@ function renderBaseline(words, frame, fps) {
   const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-start', maxWidth: '80%', textAlign: 'left' }}>
         {group.map((w, i) => {
-          const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, fontSize: 52, color: active ? '#FFFFFF' : '#9CA3AF', textDecoration: active ? 'underline' : 'none', textDecorationColor: '#FFFFFF', textUnderlineOffset: 8, textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400, fontSize: 52, color: '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -772,15 +776,19 @@ function renderBaseline(words, frame, fps) {
 // 35. cartwheel-purple
 // ===========================================================================
 function renderCartwheelPurple(words, frame, fps) {
-  const active = words.find((w) => isWordActive(w, frame, fps));
-  if (!active) return null;
-  const wordStart = toFrame(active.start, fps);
-  const sv = spring({ frame: frame - wordStart, fps, config: { stiffness: 200, damping: 20 } });
-  const scale = interpolate(sv, [0, 1], [0.7, 1.0]);
+  const groups = groupWords(words, 5);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
-    <div style={centerContainer}>
-      <div style={{ background: '#7C3AED', padding: '16px 36px', borderRadius: 12, transform: `scale(${scale})`, boxShadow: '0 4px 20px rgba(124,58,237,0.4)' }}>
-        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 72, textTransform: 'uppercase', color: '#FFFFFF' }}>{active.word}</span>
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ background: '#7C3AED', padding: '16px 36px', borderRadius: 12, display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
+        {group.map((w, i) => {
+          const active = activeWord && w === activeWord;
+          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: active ? 90 : 60, textTransform: 'uppercase', color: active ? '#FACC15' : '#FFFFFF' }}>{w.word}</span>);
+        })}
       </div>
     </div>
   );
@@ -798,10 +806,10 @@ function renderArionPink(words, frame, fps) {
   const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
+      <div style={{ background: '#EC4899', borderRadius: 10, padding: '14px 28px', transform: 'rotate(-5deg)', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 60, color: active ? '#EC4899' : '#FBCFE8', filter: active ? 'drop-shadow(0 0 16px #EC4899)' : 'none', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontStyle: 'italic', fontSize: active ? 90 : 60, color: active ? '#FACC15' : '#FFFFFF' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -817,10 +825,14 @@ function renderCastor(words, frame, fps) {
   if (!group) return null;
   const groupStart = toFrame(group[0].start, fps);
   const entrance = interpolate(frame, [groupStart, groupStart + 8], [0, 1], clamp);
+  const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
-        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 56, color: '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
+      <div style={{ background: '#7C3AED', borderRadius: 10, padding: '14px 28px', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
+        {group.map((w, i) => {
+          const active = activeWord && w === activeWord;
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 56, color: active ? '#EC4899' : '#FFFFFF' }}>{w.word}</span>);
+        })}
       </div>
     </div>
   );
@@ -859,7 +871,7 @@ function renderFlair(words, frame, fps) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: active ? 700 : 400, fontStyle: active ? 'italic' : 'normal', fontSize: 54, color: '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontStyle: active ? 'italic' : 'normal', fontSize: active ? 70 : 54, color: '#FFFFFF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -909,7 +921,7 @@ function renderDimidium(words, frame, fps) {
       <div style={{ maxWidth: '80%', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: active ? 700 : 400, fontStyle: 'italic', fontSize: 56, color: active ? '#84CC16' : '#D1D5DB', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: active ? 700 : 400, fontStyle: 'italic', fontSize: 56, color: active ? '#E8B84D' : '#D1D5DB', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -950,10 +962,10 @@ function renderOrbitarBlack(words, frame, fps) {
   const activeWord = findCurrentActiveWord(group, frame, fps);
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
+      <div style={{ background: '#1F2937', borderRadius: 10, padding: '12px 24px', transform: 'rotate(-3deg)', display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: 60, textTransform: 'uppercase', color: active ? '#FACC15' : '#FFFFFF', transform: active ? 'scale(1.2)' : 'scale(1)', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: active ? 78 : 60, textTransform: 'uppercase', color: active ? '#FACC15' : '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -975,7 +987,7 @@ function renderVitaminB(words, frame, fps) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'baseline', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: active ? 800 : 400, fontSize: active ? 80 : 48, color: active ? '#FFFFFF' : '#9CA3AF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: active ? 800 : 400, fontSize: active ? 80 : 48, color: active ? '#FFFFFF' : '#9CA3AF', textShadow: '2px 2px 8px rgba(0,0,0,0.7)', background: active ? 'linear-gradient(135deg, #3B82F6, #22C55E, #FACC15)' : 'transparent', borderRadius: active ? 5 : 0, padding: active ? '5px 15px' : 0 }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -997,7 +1009,7 @@ function renderLumin(words, frame, fps) {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '80%' }}>
         {group.map((w, i) => {
           const active = activeWord && w === activeWord;
-          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 400, fontSize: 56, color: '#FFFFFF', textShadow: active ? '0 0 10px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.5), 2px 2px 8px rgba(0,0,0,0.7)' : '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
+          return (<span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300, fontSize: active ? 112 : 56, color: '#FFFFFF', textShadow: active ? '0 0 10px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.5), 2px 2px 8px rgba(0,0,0,0.7)' : '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>);
         })}
       </div>
     </div>
@@ -1039,9 +1051,9 @@ function renderMinimal(words, frame, fps) {
 }
 
 // ===========================================================================
-// 48. neon
+// 48. drive (ex-neon : blanc, uppercase, letter-spacing large)
 // ===========================================================================
-function renderNeon(words, frame, fps) {
+function renderDrive(words, frame, fps) {
   const groups = groupWords(words, 4);
   const group = findActiveGroup(groups, frame, fps);
   if (!group) return null;
@@ -1051,6 +1063,442 @@ function renderNeon(words, frame, fps) {
     <div style={{ ...centerContainer, opacity: entrance }}>
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
         {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.3em', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// 48b. neon (rose avec glow rose)
+// ===========================================================================
+function renderNeon(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = isWordActive(w, frame, fps);
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: active ? '#F472B6' : '#EC4899', textShadow: '0 0 10px rgba(236,72,153,0.8), 0 0 30px rgba(236,72,153,0.4)', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: pacific
+// ===========================================================================
+function renderPacific(words, frame, fps) {
+  const groups = groupWords(words, 1);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const w = group[0];
+  const ws = toFrame(w.start, fps);
+  const sv = spring({ frame: frame - ws, fps, config: { stiffness: 200, damping: 18 } });
+  const scale = interpolate(sv, [0, 1], [0.7, 1]);
+  return (
+    <div style={{ ...centerContainer }}>
+      <div style={{ transform: `scale(${scale})`, background: 'linear-gradient(135deg, #3B82F6, #8B5CF6)', borderRadius: 30, padding: '15px 40px', boxShadow: '0 8px 30px rgba(59,130,246,0.4)' }}>
+        <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 80, color: '#FFFFFF', textTransform: 'uppercase' }}>{w.word}</span>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: scene
+// ===========================================================================
+function renderScene(words, frame, fps) {
+  const groups = groupWords(words, 5);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 8], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontSize: 52, color: '#E8B84D', fontStyle: 'italic' }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: cygnus-a
+// ===========================================================================
+function renderCygnusA(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: active ? '#22C55E' : '#FFFFFF', textTransform: 'uppercase', textShadow: '2px 2px 0 #000', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: doodle
+// ===========================================================================
+function renderDoodle(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: active ? '#E8B84D' : '#EC4899', textTransform: 'uppercase', WebkitTextStroke: active ? '2px #EC4899' : 'none', paintOrder: 'stroke fill', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: blueprint
+// ===========================================================================
+function renderBlueprint(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ position: 'relative', display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: 'rgba(255,255,255,0.5)' }} />
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 56, color: '#FFFFFF', textTransform: 'uppercase', position: 'relative', zIndex: 1 }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: freshly
+// ===========================================================================
+function renderFreshly(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ background: 'rgba(128,128,128,0.3)', borderRadius: 30, padding: '12px 30px', display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300, fontSize: 48, color: active ? '#FFFFFF' : '#9CA3AF', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: finlay
+// ===========================================================================
+function renderFinlay(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', transform: 'rotate(-5deg)' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: active ? 80 : 52, color: active ? '#E8B84D' : '#FFFFFF', fontStyle: 'italic', transition: 'all 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: runway
+// ===========================================================================
+function renderRunway(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ background: '#000000', borderRadius: 8, padding: '12px 28px', transform: 'rotate(-2deg)', display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 56, color: active ? '#EC4899' : '#FFFFFF', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: sirius
+// ===========================================================================
+function renderSirius(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 56, color: '#FFFFFF', textTransform: 'uppercase', textShadow: '2px 2px 0 #000', background: active ? '#7C3AED' : (i % 2 === 0 ? 'transparent' : 'transparent'), borderRadius: active ? 8 : 0, padding: active ? '4px 14px' : '4px 0', transition: 'all 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: medusa
+// ===========================================================================
+function renderMedusa(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', transform: 'rotate(-3deg)' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 56, color: active ? '#FFFFFF' : (i % 2 === 0 ? '#FFFFFF' : '#22C55E'), textTransform: 'uppercase', textShadow: '2px 2px 0 #000', background: active ? '#7C3AED' : 'transparent', borderRadius: active ? 8 : 0, padding: active ? '4px 14px' : '4px 0', transition: 'all 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: minima
+// ===========================================================================
+function renderMinima(words, frame, fps) {
+  const groups = groupWords(words, 5);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: '#FFFFFF', textTransform: 'lowercase', fontStyle: 'italic' }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: energy-ii
+// ===========================================================================
+function renderEnergyII(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '16px 32px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: 56, color: active ? '#1F2937' : '#D1D5DB', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: nova
+// ===========================================================================
+function renderNova(words, frame, fps) {
+  const groups = groupWords(words, 5);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 8], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 800 }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 56, color: '#FFFFFF' }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: garnet
+// ===========================================================================
+function renderGarnet(words, frame, fps) {
+  const groups = groupWords(words, 1);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const w = group[0];
+  const ws = toFrame(w.start, fps);
+  const sv = spring({ frame: frame - ws, fps, config: { stiffness: 200, damping: 18 } });
+  const scale = interpolate(sv, [0, 1], [0.7, 1]);
+  return (
+    <div style={{ ...centerContainer }}>
+      <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 90, color: '#FFFFFF', textTransform: 'uppercase', transform: `scale(${scale})`, display: 'inline-block' }}>{w.word}</span>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: glow
+// ===========================================================================
+function renderGlow(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 64, color: 'transparent', textTransform: 'uppercase', WebkitTextStroke: '2px #EC4899', textShadow: '0 0 15px rgba(236,72,153,0.8), 0 0 30px rgba(236,72,153,0.4)' }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: monster
+// ===========================================================================
+function renderMonster(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  const currentWord = findCurrentActiveWord(group, frame, fps);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', transform: 'rotate(-3deg)' }}>
+        {group.map((w, i) => {
+          const active = currentWord && w.word === currentWord.word && w.start === currentWord.start;
+          return (
+            <span key={i} style={{ fontFamily: "'Luckiest Guy', cursive", fontWeight: 400, fontSize: 64, color: active ? '#22C55E' : '#FFFFFF', textTransform: 'uppercase', fontStyle: 'italic', WebkitTextStroke: '2px #000000', textShadow: '3px 3px 0 #000', paintOrder: 'stroke fill', transition: 'color 0.3s ease' }}>{w.word}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: alhena
+// ===========================================================================
+function renderAlhena(words, frame, fps) {
+  const groups = groupWords(words, 1);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const w = group[0];
+  const ws = toFrame(w.start, fps);
+  const sv = spring({ frame: frame - ws, fps, config: { stiffness: 200, damping: 18 } });
+  const scale = interpolate(sv, [0, 1], [0.7, 1]);
+  return (
+    <div style={{ ...centerContainer }}>
+      <span style={{ fontFamily: "'Noto Serif', serif", fontWeight: 700, fontSize: 90, color: '#FFFFFF', textTransform: 'uppercase', transform: `scale(${scale})`, display: 'inline-block' }}>{w.word}</span>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: pollux
+// ===========================================================================
+function renderPollux(words, frame, fps) {
+  const groups = groupWords(words, 4);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 6], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ background: '#7C3AED', borderRadius: 8, padding: '12px 28px', display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 56, color: '#22C55E', textTransform: 'uppercase' }}>{w.word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// NEW: million
+// ===========================================================================
+function renderMillion(words, frame, fps) {
+  const groups = groupWords(words, 5);
+  const group = findActiveGroup(groups, frame, fps);
+  if (!group) return null;
+  const groupStart = toFrame(group[0].start, fps);
+  const entrance = interpolate(frame, [groupStart, groupStart + 8], [0, 1], clamp);
+  return (
+    <div style={{ ...centerContainer, opacity: entrance }}>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {group.map((w, i) => (
+          <span key={i} style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 300, fontSize: 48, color: '#9CA3AF', textTransform: 'lowercase' }}>{w.word}</span>
+        ))}
       </div>
     </div>
   );
@@ -1134,6 +1582,26 @@ export const CaptionsComposition = ({ videoUrl, words, style, emojiCues }) => {
       case 'bold': return renderBold(words, frame, fps);
       case 'minimal': return renderMinimal(words, frame, fps);
       case 'neon': return renderNeon(words, frame, fps);
+      case 'drive': return renderDrive(words, frame, fps);
+      case 'pacific': return renderPacific(words, frame, fps);
+      case 'scene': return renderScene(words, frame, fps);
+      case 'cygnus-a': return renderCygnusA(words, frame, fps);
+      case 'doodle': return renderDoodle(words, frame, fps);
+      case 'blueprint': return renderBlueprint(words, frame, fps);
+      case 'freshly': return renderFreshly(words, frame, fps);
+      case 'finlay': return renderFinlay(words, frame, fps);
+      case 'runway': return renderRunway(words, frame, fps);
+      case 'sirius': return renderSirius(words, frame, fps);
+      case 'medusa': return renderMedusa(words, frame, fps);
+      case 'minima': return renderMinima(words, frame, fps);
+      case 'energy-ii': return renderEnergyII(words, frame, fps);
+      case 'nova': return renderNova(words, frame, fps);
+      case 'garnet': return renderGarnet(words, frame, fps);
+      case 'glow': return renderGlow(words, frame, fps);
+      case 'monster': return renderMonster(words, frame, fps);
+      case 'alhena': return renderAlhena(words, frame, fps);
+      case 'pollux': return renderPollux(words, frame, fps);
+      case 'million': return renderMillion(words, frame, fps);
       case 'elegant-classic': return renderElegantClassic(words, frame, fps);
       default: return renderHeatGlow(words, frame, fps);
     }

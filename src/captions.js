@@ -35,7 +35,12 @@ const REMOTION_STYLES = [
   'linear', 'cartwheel-black', 'footprint-v3', 'andromeda', 'baseline',
   'cartwheel-purple', 'arion-pink', 'castor', 'techwave', 'flair',
   'aries', 'dimidium', 'fuel', 'orbitar-black', 'vitamin-b', 'lumin',
-  'bold', 'minimal', 'neon', 'elegant-classic',
+  'bold', 'minimal', 'drive', 'neon', 'elegant-classic',
+  // ——— Nouveaux styles ———
+  'pacific', 'scene', 'cygnus-a', 'doodle', 'blueprint',
+  'freshly', 'finlay', 'runway', 'sirius', 'medusa',
+  'minima', 'energy-ii', 'nova', 'garnet', 'glow',
+  'monster', 'alhena', 'pollux', 'million',
 ];
 
 
