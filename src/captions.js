@@ -370,6 +370,7 @@ export async function extractCaptions(
       model: 'whisper-1',
       response_format: 'verbose_json',
       timestamp_granularities: ['word'],
+      prompt: 'Inclure toute la ponctuation : virgules, points, points d\'exclamation, points d\'interrogation.',
     });
     const words = transcription.words || [];
     console.log(`[captions] words:`, JSON.stringify(words.slice(0, 5)));
