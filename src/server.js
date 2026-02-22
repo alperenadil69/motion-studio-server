@@ -198,12 +198,18 @@ app.post('/captions', async (req, res) => {
 // Start
 // ---------------------------------------------------------------------------
 
-// Verify ffmpeg is available
+// Verify ffmpeg and ffprobe are available
 try {
   execSync('which ffmpeg', { stdio: 'pipe' });
   console.log('[startup] ffmpeg found');
 } catch {
   console.error('[startup] ffmpeg is NOT installed — /captions will not work');
+}
+try {
+  execSync('which ffprobe', { stdio: 'pipe' });
+  console.log('[startup] ffprobe found');
+} catch {
+  console.error('[startup] ffprobe is NOT installed — video dimension detection will fail');
 }
 
 console.log('Initialising browser…');
