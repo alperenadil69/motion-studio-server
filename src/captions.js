@@ -26,6 +26,33 @@ const TMP_DIR = path.join(ROOT_DIR, 'tmp');
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const FUNCTION_NAME = process.env.REMOTION_FUNCTION_NAME;
 
+// ---------------------------------------------------------------------------
+// Concurrency limiter — max 2 Lambda renders at a time
+// ---------------------------------------------------------------------------
+const MAX_CONCURRENT_RENDERS = 2;
+let activeRenders = 0;
+const renderQueue = [];
+
+function acquireRenderSlot() {
+  return new Promise((resolve) => {
+    if (activeRenders < MAX_CONCURRENT_RENDERS) {
+      activeRenders++;
+      resolve();
+    } else {
+      renderQueue.push(resolve);
+    }
+  });
+}
+
+function releaseRenderSlot() {
+  if (renderQueue.length > 0) {
+    const next = renderQueue.shift();
+    next(); // hand the slot to the next waiter
+  } else {
+    activeRenders--;
+  }
+}
+
 const REMOTION_STYLES = [
   'heat-glow', 'elegant', 'word-pop', 'cinematic', 'emoji-auto',
   'heat', 'zodiac', 'hustle-v3', 'orion', 'cove', 'magazine',
@@ -140,18 +167,38 @@ async function renderCaptionsWithRemotion(videoUrl, words, style, jobId, { width
       options: { webpackOverride },
     });
 
-    // 4. Start Lambda render
+    // 4. Start Lambda render (with exponential backoff on Rate Exceeded)
     console.log(`[captions-remotion:${jobId}] Launching Lambda render…`);
-    const { renderId, bucketName: renderBucket } = await renderMediaOnLambda({
-      region: REGION,
-      functionName: FUNCTION_NAME,
-      serveUrl,
-      composition: 'CaptionsVideo',
-      inputProps: { videoUrl, words, style, emojiCues },
-      codec: 'h264',
-      timeoutInMilliseconds: 240000,
-      framesPerLambda: 60,
-    });
+    let renderId, renderBucket;
+    const MAX_RETRIES = 3;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const result = await renderMediaOnLambda({
+          region: REGION,
+          functionName: FUNCTION_NAME,
+          serveUrl,
+          composition: 'CaptionsVideo',
+          inputProps: { videoUrl, words, style, emojiCues },
+          codec: 'h264',
+          timeoutInMilliseconds: 240000,
+          framesPerLambda: 60,
+        });
+        renderId = result.renderId;
+        renderBucket = result.bucketName;
+        break;
+      } catch (err) {
+        const isRateExceeded = err.message?.includes('Rate Exceeded') ||
+          err.message?.includes('TooManyRequestsException') ||
+          err.message?.includes('Throttling');
+        if (isRateExceeded && attempt < MAX_RETRIES - 1) {
+          const delay = Math.pow(2, attempt + 1) * 1000; // 2s, 4s, 8s
+          console.warn(`[captions-remotion:${jobId}] Rate Exceeded — retry ${attempt + 1}/${MAX_RETRIES - 1} in ${delay / 1000}s…`);
+          await new Promise((r) => setTimeout(r, delay));
+        } else {
+          throw err;
+        }
+      }
+    }
 
     // 5. Poll until done
     console.log(`[captions-remotion:${jobId}] Polling render ${renderId}…`);
@@ -289,15 +336,23 @@ export async function extractCaptions(
       return { words, video_url: null };
     }
 
-    // 4. Render captions via Remotion Lambda
+    // 4. Render captions via Remotion Lambda (with concurrency limit)
     console.log(`[captions:${jobId}] Using Remotion Lambda pipeline for style: ${style}`);
-    const { width, height } = await getVideoDimensions(videoPath);
-    await renderCaptionsWithRemotion(videoUrl, words, style, jobId, {
-      width,
-      height,
-      fps: 30,
-      emojiCues,
-    });
+    console.log(`[captions:${jobId}] Waiting for render slot (${activeRenders}/${MAX_CONCURRENT_RENDERS} active)…`);
+    await acquireRenderSlot();
+    console.log(`[captions:${jobId}] Render slot acquired (${activeRenders}/${MAX_CONCURRENT_RENDERS} active)`);
+    try {
+      const { width, height } = await getVideoDimensions(videoPath);
+      await renderCaptionsWithRemotion(videoUrl, words, style, jobId, {
+        width,
+        height,
+        fps: 30,
+        emojiCues,
+      });
+    } finally {
+      releaseRenderSlot();
+      console.log(`[captions:${jobId}] Render slot released (${activeRenders}/${MAX_CONCURRENT_RENDERS} active)`);
+    }
 
     // 5. Serve via Railway
     const publicUrl = `${baseUrl}/captions-output/${outputFilename}`;

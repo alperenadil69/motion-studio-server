@@ -190,6 +190,39 @@ app.post('/captions', async (req, res) => {
     res.json({ success: true, words: result.words, video_url: result.video_url });
   } catch (err) {
     console.error(`[captions:${job_id}] Error:`, err.message);
+    const isRateError = err.message?.includes('Rate Exceeded') ||
+      err.message?.includes('TooManyRequestsException') ||
+      err.message?.includes('Throttling');
+    if (isRateError) {
+      // Update job status to server_busy so frontend can retry
+      if (supabase_url && supabase_key) {
+        await fetch(`${supabase_url}/rest/v1/motion_studio_jobs?id=eq.${job_id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabase_key,
+            'Authorization': `Bearer ${supabase_key}`,
+          },
+          body: JSON.stringify({ status: 'server_busy' }),
+        }).catch(() => {});
+      }
+      return res.status(429).json({
+        error: 'server_busy',
+        message: 'Too many renders in progress, please try again in a few seconds',
+      });
+    }
+    // For other errors, mark as error in Supabase
+    if (supabase_url && supabase_key) {
+      await fetch(`${supabase_url}/rest/v1/motion_studio_jobs?id=eq.${job_id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabase_key,
+          'Authorization': `Bearer ${supabase_key}`,
+        },
+        body: JSON.stringify({ status: 'error' }),
+      }).catch(() => {});
+    }
     res.status(500).json({ error: err.message });
   }
 });
