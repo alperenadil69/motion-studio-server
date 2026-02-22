@@ -1050,7 +1050,7 @@ function renderNeon(words, frame, fps) {
   return (
     <div style={{ ...centerContainer, opacity: entrance }}>
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: 6, textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
+        {group.map((w, i) => (<span key={i} style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: 60, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.3em', textShadow: '2px 2px 8px rgba(0,0,0,0.7)' }}>{w.word}</span>))}
       </div>
     </div>
   );
