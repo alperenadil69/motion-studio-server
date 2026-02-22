@@ -7,25 +7,36 @@ import {
   interpolate,
   spring,
 } from 'remotion';
-import { loadFont } from '@remotion/fonts';
-
 // ---------------------------------------------------------------------------
-// Font loading
+// Font loading — via @remotion/google-fonts (bundled, no network calls at render)
 // ---------------------------------------------------------------------------
+import { loadFont as loadNotoSerif } from '@remotion/google-fonts/NotoSerif';
+import { loadFont as loadPlayfairDisplay } from '@remotion/google-fonts/PlayfairDisplay';
+import { loadFont as loadDancingScript } from '@remotion/google-fonts/DancingScript';
+import { loadFont as loadOswald } from '@remotion/google-fonts/Oswald';
+import { loadFont as loadBebasNeue } from '@remotion/google-fonts/BebasNeue';
+import { loadFont as loadCourierPrime } from '@remotion/google-fonts/CourierPrime';
+import { loadFont as loadMontserrat } from '@remotion/google-fonts/Montserrat';
+import { loadFont as loadPoppins } from '@remotion/google-fonts/Poppins';
+import { loadFont as loadCinzel } from '@remotion/google-fonts/Cinzel';
+import { loadFont as loadCaveat } from '@remotion/google-fonts/Caveat';
+import { loadFont as loadEBGaramond } from '@remotion/google-fonts/EBGaramond';
+import { loadFont as loadDMSans } from '@remotion/google-fonts/DMSans';
+import { loadFont as loadLuckiestGuy } from '@remotion/google-fonts/LuckiestGuy';
 
-loadFont({ family: 'Noto Serif', url: 'https://fonts.gstatic.com/s/notoserif/v23/ga6Iaw1J5X9T9RW6j9bNfFImZzC7TMQ.woff2' });
-loadFont({ family: 'Playfair Display', url: 'https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKd3vUDQZNLo_U2r.woff2' });
-loadFont({ family: 'Dancing Script', url: 'https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSo3Sup6hNX6plRP.woff2' });
-loadFont({ family: 'Oswald', url: 'https://fonts.gstatic.com/s/oswald/v53/TK3_WkUHHAIjg75cFRf3bXL8LICs1_FvsUZiYA.woff2' });
-loadFont({ family: 'Bebas Neue', url: 'https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXooxW5rygbi49c.woff2' });
-loadFont({ family: 'Courier Prime', url: 'https://fonts.gstatic.com/s/courierprime/v9/u-450q2lgwslOqpF_6gQ8kELWwZjW-_-tvg.woff2' });
-loadFont({ family: 'Montserrat', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXo.woff2' });
-loadFont({ family: 'Poppins', url: 'https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2' });
-loadFont({ family: 'Cinzel', url: 'https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYrvDE5ZdqU.woff2' });
-loadFont({ family: 'Caveat', url: 'https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9SIKjYBxPigs.woff2' });
-loadFont({ family: 'EB Garamond', url: 'https://fonts.gstatic.com/s/ebgaramond/v27/SlGDmQSNjdsmc35JDF1K5E55YMjF_7DPuGi-6_RUA4V-e6yHgQ.woff2' });
-loadFont({ family: 'DM Sans', url: 'https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhS23.woff2' });
-loadFont({ family: 'Luckiest Guy', url: 'https://fonts.gstatic.com/s/luckiestguy/v22/BjS0t9cLf94Cy1lz7HDBhmxoVPjmYg.woff2' });
+loadNotoSerif();
+loadPlayfairDisplay();
+loadDancingScript();
+loadOswald();
+loadBebasNeue();
+loadCourierPrime();
+loadMontserrat();
+loadPoppins();
+loadCinzel();
+loadCaveat();
+loadEBGaramond();
+loadDMSans();
+loadLuckiestGuy();
 
 // ---------------------------------------------------------------------------
 // Helpers
