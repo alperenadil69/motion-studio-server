@@ -26,112 +26,18 @@ const TMP_DIR = path.join(ROOT_DIR, 'tmp');
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const FUNCTION_NAME = process.env.REMOTION_FUNCTION_NAME;
 
-const REMOTION_STYLES = ['heat-glow', 'elegant', 'word-pop', 'cinematic', 'emoji-auto'];
+const REMOTION_STYLES = [
+  'heat-glow', 'elegant', 'word-pop', 'cinematic', 'emoji-auto',
+  'heat', 'zodiac', 'hustle-v3', 'orion', 'cove', 'magazine',
+  'betelgeuse', 'daily-mail', 'eclipse', 'suzy', 'milky-way',
+  'vitamin-c', 'alcyone', 'buzz', 'thuban', 'marigold', 'closed-cap',
+  'note', 'poem', 'energy', 'recess', 'messages', 'mizar', 'pulse',
+  'linear', 'cartwheel-black', 'footprint-v3', 'andromeda', 'baseline',
+  'cartwheel-purple', 'arion-pink', 'castor', 'techwave', 'flair',
+  'aries', 'dimidium', 'fuel', 'orbitar-black', 'vitamin-b', 'lumin',
+  'bold', 'minimal', 'neon', 'elegant-classic',
+];
 
-// ---------------------------------------------------------------------------
-// ASS helpers (for ffmpeg-based styles)
-// ---------------------------------------------------------------------------
-
-function formatAssTime(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  const cs = Math.round((seconds % 1) * 100);
-  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
-}
-
-function groupWordsAss(words) {
-  const groups = [];
-  for (let i = 0; i < words.length;) {
-    const remaining = words.length - i;
-    const size = remaining >= 7 ? 3 : remaining >= 4 ? 4 : remaining;
-    groups.push(words.slice(i, i + size));
-    i += size;
-  }
-  return groups;
-}
-
-const STYLE_DEFS = {
-  heat: {
-    fontsize: 52, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
-    outline: 2, shadow: 1, borderStyle: 1, alignment: 2, marginV: 60,
-    highlight: '&H000000FF',
-  },
-  bold: {
-    fontsize: 72, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
-    outline: 3, shadow: 2, borderStyle: 1, alignment: 5, marginV: 30,
-    highlight: null, uppercase: true,
-  },
-  minimal: {
-    fontsize: 40, bold: 0, italic: 0,
-    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H80000000',
-    outline: 0, shadow: 0, borderStyle: 3, alignment: 2, marginV: 50,
-    highlight: null,
-  },
-  neon: {
-    fontsize: 52, bold: 1, italic: 0,
-    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
-    outline: 2, shadow: 1, borderStyle: 1, alignment: 2, marginV: 60,
-    highlight: '&H0000FFFF',
-  },
-  elegant: {
-    fontsize: 44, bold: 0, italic: 1,
-    primaryColour: '&H00FFFFFF', outlineColour: '&H00000000', backColour: '&H00000000',
-    outline: 1, shadow: 0, borderStyle: 1, alignment: 2, marginV: 60,
-    highlight: null,
-  },
-};
-
-function generateAss(words, style) {
-  const def = STYLE_DEFS[style] || STYLE_DEFS.heat;
-  const groups = groupWordsAss(words);
-
-  let ass = `[Script Info]
-Title: Captions
-ScriptType: v4.00+
-PlayResX: 1920
-PlayResY: 1080
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,${def.fontsize},${def.primaryColour},&H00000000,${def.outlineColour},${def.backColour},${def.bold},${def.italic},0,0,100,100,0,0,${def.borderStyle},${def.outline},${def.shadow},${def.alignment},40,40,${def.marginV},1
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-`;
-
-  for (const group of groups) {
-    const groupStart = group[0].start;
-    const groupEnd = group[group.length - 1].end;
-
-    if (def.highlight) {
-      for (let w = 0; w < group.length; w++) {
-        const wStart = formatAssTime(group[w].start);
-        const wEnd = formatAssTime(
-          w < group.length - 1 ? group[w + 1].start : groupEnd,
-        );
-        const text = group
-          .map((g, idx) => {
-            const word = def.uppercase ? g.word.toUpperCase() : g.word;
-            return idx === w
-              ? `{\\c${def.highlight}}${word}{\\c${def.primaryColour}}`
-              : word;
-          })
-          .join(' ');
-        ass += `Dialogue: 0,${wStart},${wEnd},Default,,0,0,0,,${text}\n`;
-      }
-    } else {
-      const text = group
-        .map((g) => (def.uppercase ? g.word.toUpperCase() : g.word))
-        .join(' ');
-      ass += `Dialogue: 0,${formatAssTime(groupStart)},${formatAssTime(groupEnd)},Default,,0,0,0,,${text}\n`;
-    }
-  }
-
-  return ass;
-}
 
 // ---------------------------------------------------------------------------
 // Remotion Lambda helpers (for premium styles)
@@ -319,7 +225,6 @@ export async function extractCaptions(
 ) {
   const videoPath = path.join('/tmp', `${jobId}.mp4`);
   const audioPath = path.join('/tmp', `${jobId}.wav`);
-  const assPath = path.join('/tmp', `${jobId}.ass`);
   const outputFilename = `${jobId}-captioned.mp4`;
   const outputPath = path.join('/tmp', outputFilename);
 
@@ -379,31 +284,15 @@ export async function extractCaptions(
       return { words, video_url: null };
     }
 
-    // 4. Render captions — Remotion Lambda or ffmpeg
-    if (REMOTION_STYLES.includes(style)) {
-      // --- Remotion Lambda path ---
-      console.log(`[captions:${jobId}] Using Remotion Lambda pipeline for style: ${style}`);
-      const { width, height } = await getVideoDimensions(videoPath);
-      await renderCaptionsWithRemotion(videoUrl, words, style, jobId, {
-        width,
-        height,
-        fps: 30,
-        emojiCues,
-      });
-    } else {
-      // --- ffmpeg / ASS path ---
-      console.log(`[captions:${jobId}] Generating .ass (style: ${style})…`);
-      const assContent = generateAss(words, style);
-      fs.writeFileSync(assPath, assContent);
-
-      console.log(`[captions:${jobId}] Burning subtitles…`);
-      await execFileAsync(
-        'ffmpeg',
-        ['-i', videoPath, '-vf', `ass=${assPath}`, '-c:a', 'copy', '-y', outputPath],
-        { timeout: 120_000 },
-      );
-      console.log(`[captions:${jobId}] Subtitles burned`);
-    }
+    // 4. Render captions via Remotion Lambda
+    console.log(`[captions:${jobId}] Using Remotion Lambda pipeline for style: ${style}`);
+    const { width, height } = await getVideoDimensions(videoPath);
+    await renderCaptionsWithRemotion(videoUrl, words, style, jobId, {
+      width,
+      height,
+      fps: 30,
+      emojiCues,
+    });
 
     // 5. Serve via Railway
     const publicUrl = `${baseUrl}/captions-output/${outputFilename}`;
@@ -416,7 +305,7 @@ export async function extractCaptions(
 
     return { words, video_url: publicUrl };
   } finally {
-    for (const f of [videoPath, audioPath, assPath]) {
+    for (const f of [videoPath, audioPath]) {
       try { fs.unlinkSync(f); } catch {}
     }
   }
