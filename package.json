@@ -11,10 +11,10 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
     "@aws-sdk/client-s3": "^3.994.0",
-    "@remotion/bundler": "^4.0.0",
+    "@remotion/bundler": "^4.0.477",
     "@remotion/fonts": "^4.0.425",
     "@remotion/google-fonts": "^4.0.425",
-    "@remotion/lambda": "^4.0.425",
+    "@remotion/lambda": "^4.0.477",
     "@remotion/renderer": "^4.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
